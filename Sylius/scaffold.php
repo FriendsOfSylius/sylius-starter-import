@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Castor\Sylius\Import;
 
 use Castor\Sylius\App;
+use Castor\Sylius\Util\Database;
 
 use function Castor\fs;
 use function Castor\io;
@@ -39,6 +40,7 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
     ImportContext::setCurrent(new ImportContext($app, $serviceName));
     deploy_import_scaffold();
     maybe_refresh_composer_autoload();
+    Database::migrate($app);
 }
 
 function ensure_sylius_application(): void

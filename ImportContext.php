@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Castor\Sylius\Import;
 
 use Castor\Sylius\App;
+use Castor\Sylius\Util\Database;
 use Castor\Sylius\Util\Filesystem;
 use Castor\Sylius\Util\Yaml;
 
