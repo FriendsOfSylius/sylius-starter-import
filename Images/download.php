@@ -4,15 +4,7 @@ declare(strict_types=1);
 
 namespace Castor\Sylius\Import;
 
-use function Castor\context;
-use function Castor\http_client;
 use function Castor\io;
-use function Castor\run;
-use function Castor\variable;
-use function Castor\Sylius\Import\add_yaml_import;
-use function Castor\Sylius\Import\add_yaml_import_with_options;
-use function Castor\Sylius\Import\app_dir;
-use function Castor\Sylius\Import\export_array;
 
 function normalize_image_url(string $url): string
 {
