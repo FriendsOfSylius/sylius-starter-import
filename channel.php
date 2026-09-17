@@ -13,9 +13,9 @@ function shop_root_domain(): string
     return \is_string($domain) && '' !== trim($domain) ? trim($domain) : 'app.test';
 }
 
-function shop_hostname(string $slug): string
+function shop_hostname(?string $subdomain = null): string
 {
-    return $slug . '.' . shop_root_domain();
+    return $subdomain ? $subdomain . '.' . shop_root_domain() : shop_root_domain();
 }
 
 function channel_code_from_slug(string $slug): string

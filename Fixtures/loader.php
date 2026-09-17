@@ -22,9 +22,8 @@ function load_import_fixture_suite(string $projectSlug): void
 
     io()->title(\sprintf('Loading import fixtures for %s', $projectSlug));
     import_log(\sprintf(
-        'Resetting channel %s if it already exists, then loading suite import (%s).',
+        'Resetting channel %s if it already exists, then loading suite import.',
         $channelCode,
-        shop_hostname($projectSlug),
     ));
 
     import_docker_compose_run(import_channel_reset_cli($projectSlug));

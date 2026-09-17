@@ -51,6 +51,7 @@ function write_import_fixture_files(
     array $productFixture,
     array $productPriceFixture,
     string $mode,
+    ?string $subdomain,
 ): void {
     $relativeDir = import_fixture_slug_dir($projectSlug);
     $fixturesDir = app_dir() . '/config/sylius/fixtures/' . $relativeDir;
@@ -65,7 +66,7 @@ function write_import_fixture_files(
     write_fixture_file($relativeDir . '/taxon_images.php', $taxonImageFixture);
     write_fixture_file($relativeDir . '/products.php', $productFixture);
     write_fixture_file($relativeDir . '/product_prices.php', $productPriceFixture);
-    write_fixture_file($relativeDir . '/channel.php', build_channel_fixture($projectSlug));
+    write_fixture_file($relativeDir . '/channel.php', build_channel_fixture($projectSlug, $subdomain));
     write_fixture_file($relativeDir . '/channel_access.php', build_channel_access_fixture($projectSlug));
     write_fixture_file($relativeDir . '/admin_user.php', build_admin_user_fixture($projectSlug));
     write_fixture_file($relativeDir . '/shop_user.php', build_shop_user_fixture($projectSlug));
@@ -77,7 +78,7 @@ function write_import_fixture_files(
         \count($selectedProducts),
         $projectSlug,
         channel_code_from_slug($projectSlug),
-        shop_hostname($projectSlug),
+        shop_hostname($subdomain),
     ));
 
     write_last_generated_import([

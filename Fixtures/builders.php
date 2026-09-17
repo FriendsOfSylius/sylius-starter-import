@@ -133,11 +133,11 @@ function build_taxon_fixture(array $taxonIndex, string $projectSlug = ''): array
 /**
  * @return array<string, mixed>
  */
-function build_channel_fixture(string $projectSlug): array
+function build_channel_fixture(string $projectSlug, ?string $subdomain = null): array
 {
     $code = channel_code_from_slug($projectSlug);
     $name = import_project_display_name($projectSlug);
-    $hostname = shop_hostname($projectSlug);
+    $hostname = shop_hostname($subdomain);
     $menuTaxon = shop_menu_taxon_code($projectSlug);
 
     return [
