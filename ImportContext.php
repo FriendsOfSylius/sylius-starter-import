@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Castor\Sylius\Import;
 
 use Castor\Sylius\App;
-use Castor\Sylius\Util\Database;
 use Castor\Sylius\Util\Filesystem;
 use Castor\Sylius\Util\Yaml;
 
+use function Castor\finder;
 use function Castor\variable;
 
 final class ImportContext
@@ -54,6 +54,26 @@ final class ImportContext
     public function appDir(): string
     {
         return $this->app->directory();
+    }
+
+    public function importDir(): string
+    {
+        return '.castor/import/var/';
+    }
+
+    public function importProjectNames(): array
+    {
+        $files = finder()
+            ->directories()
+            ->depth('== 0')
+            ->in($this->importDir());
+
+        $projectNames = [];
+        foreach ($files as $file) {
+            $projectNames[] = $file->getFilename();
+        }
+
+        return $projectNames;
     }
 
     public function projectRoot(): string

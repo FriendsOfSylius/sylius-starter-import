@@ -10,6 +10,8 @@ require_once __DIR__ . '/writer.php';
 
 function generate_existing_import_fixtures(?string $projectSlug, int $limit, ?string $domain, ?string $subdomain): void
 {
+    $context = ImportContext::current();
+
     if ($limit <= 0) {
         io()->error('Limit must be greater than 0.');
 
@@ -18,7 +20,7 @@ function generate_existing_import_fixtures(?string $projectSlug, int $limit, ?st
 
     $prepared = prepare_import_fixture_generation(
         $projectSlug,
-        'No import data found in .castor/import/var/{project-slug}/. Run sylius:import:existing:fetch first.',
+        \sprintf('No import data found in %s{project-slug}/. Run sylius:import:existing:fetch first.', $context->importDir()),
     );
 
     if (null === $prepared) {

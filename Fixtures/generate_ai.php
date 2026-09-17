@@ -10,9 +10,11 @@ require_once __DIR__ . '/writer.php';
 
 function generate_ai_import_fixtures(?string $projectSlug, ?string $domain, ?string $subdomain): void
 {
+    $context = ImportContext::current();
+
     $prepared = prepare_import_fixture_generation(
         $projectSlug,
-        'No import data found in .castor/import/var/{project-slug}/. Run sylius:import:ai:build first.',
+        \sprintf('No import data found in %s/{project-slug}/. Run sylius:import:ai:build first.', $context->importDir()),
     );
 
     if (null === $prepared) {
