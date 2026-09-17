@@ -8,7 +8,7 @@ use function Castor\io;
 
 require_once __DIR__ . '/writer.php';
 
-function generate_existing_import_fixtures(?string $projectSlug, int $limit, ?string $subdomain): void
+function generate_existing_import_fixtures(?string $projectSlug, int $limit, ?string $domain, ?string $subdomain): void
 {
     if ($limit <= 0) {
         io()->error('Limit must be greater than 0.');
@@ -187,6 +187,7 @@ function generate_existing_import_fixtures(?string $projectSlug, int $limit, ?st
         $productFixture,
         $productPriceFixture,
         'existing',
+        $domain,
         $subdomain,
     );
 

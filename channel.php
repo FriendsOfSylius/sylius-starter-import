@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace Castor\Sylius\Import;
 
-use function Castor\variable;
-
-function shop_root_domain(): string
+function shop_hostname(?string $domain = null, ?string $subdomain = null): string
 {
-    $domain = variable('root_domain', 'app.test');
+    $domain ??= 'app.test';
 
-    return \is_string($domain) && '' !== trim($domain) ? trim($domain) : 'app.test';
-}
-
-function shop_hostname(?string $subdomain = null): string
-{
-    return $subdomain ? $subdomain . '.' . shop_root_domain() : shop_root_domain();
+    return $subdomain ? $subdomain . '.' . $domain : $domain;
 }
 
 function channel_code_from_slug(string $slug): string

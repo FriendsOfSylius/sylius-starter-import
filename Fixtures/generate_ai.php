@@ -8,7 +8,7 @@ use function Castor\io;
 
 require_once __DIR__ . '/writer.php';
 
-function generate_ai_import_fixtures(?string $projectSlug, ?string $subdomain): void
+function generate_ai_import_fixtures(?string $projectSlug, ?string $domain, ?string $subdomain): void
 {
     $prepared = prepare_import_fixture_generation(
         $projectSlug,
@@ -72,6 +72,7 @@ function generate_ai_import_fixtures(?string $projectSlug, ?string $subdomain): 
         $productFixture,
         $productPriceFixture,
         'ai',
+        $domain,
         $subdomain,
     );
 
