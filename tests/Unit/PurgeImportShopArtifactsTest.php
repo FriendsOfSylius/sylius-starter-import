@@ -2,22 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Import\ImportContext;
 use PHPUnit\Framework\TestCase;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
+use SyliusStarter\Import\Tests\CastorContainerTrait;
 
-use function Castor\Sylius\Import\purge_import_shop_artifacts;
-use function Castor\Sylius\Import\write_last_generated_import;
+use function SyliusStarter\Import\purge_import_shop_artifacts;
+use function SyliusStarter\Import\write_last_generated_import;
 
 final class PurgeImportShopArtifactsTest extends TestCase
 {
+    use CastorContainerTrait;
+
     private string $root;
     private string $previousCwd;
 
     protected function setUp(): void
     {
+        $this->setUpCastorContainer();
         $this->root = sys_get_temp_dir() . '/castor-purge-shop-' . uniqid('', true);
         static::assertTrue(mkdir($this->root . '/.castor', 0o775, true));
         $this->previousCwd = getcwd() ?: $this->root;

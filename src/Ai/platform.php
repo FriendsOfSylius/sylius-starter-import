@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
-use Castor\Sylius\Import\Dto\CollectionEntry;
-use Castor\Sylius\Import\Dto\CollectionExtraction;
-use Castor\Sylius\Import\Dto\ProductSelectionEntry;
-use Castor\Sylius\Import\Dto\ProductSelectionExtraction;
-use Castor\Sylius\Import\Dto\ProductTaxonAssignmentEntry;
-use Castor\Sylius\Import\Dto\ProductTaxonAssignmentExtraction;
+use SyliusStarter\Import\Dto\CollectionEntry;
+use SyliusStarter\Import\Dto\CollectionExtraction;
+use SyliusStarter\Import\Dto\ProductSelectionEntry;
+use SyliusStarter\Import\Dto\ProductSelectionExtraction;
+use SyliusStarter\Import\Dto\ProductTaxonAssignmentEntry;
+use SyliusStarter\Import\Dto\ProductTaxonAssignmentExtraction;
 use Symfony\AI\Platform\Bridge\Ollama\Factory as OllamaFactory;
 use Symfony\AI\Platform\Bridge\OpenRouter\Factory as OpenRouterFactory;
 use Symfony\AI\Platform\Message\Message;

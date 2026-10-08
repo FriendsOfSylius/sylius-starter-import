@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
 use function Castor\context;
 use function Castor\fs;
@@ -30,7 +30,7 @@ final class ImportBootstrap
         $composerJson = $castorDir . '/composer.json';
 
         if (!is_file($composerJson)) {
-            $source = \dirname(__DIR__, 2) . '/resources/castor/composer.json';
+            $source = \dirname(__DIR__) . '/resources/castor/composer.json';
 
             if (!is_file($source)) {
                 throw new \RuntimeException(\sprintf('Missing Castor import composer template at "%s".', $source));
@@ -42,7 +42,7 @@ final class ImportBootstrap
         $envExample = $castorDir . '/.env.example';
 
         if (!is_file($envExample)) {
-            $source = \dirname(__DIR__, 2) . '/resources/castor/.env.example';
+            $source = \dirname(__DIR__) . '/resources/castor/.env.example';
 
             if (!is_file($source)) {
                 throw new \RuntimeException(\sprintf('Missing Castor import env template at "%s".', $source));

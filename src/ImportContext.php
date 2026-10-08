@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Util\Filesystem;
-use Castor\Sylius\Util\Yaml;
+use SyliusStarter\Core\App;
+use SyliusStarter\Core\Util\Filesystem;
+use SyliusStarter\Core\Util\Yaml;
 
 use function Castor\finder;
 use function Castor\variable;
@@ -112,7 +112,7 @@ final class ImportContext
 
     public static function packageResourcesDir(): string
     {
-        return \dirname(__DIR__, 2) . '/resources/import';
+        return \dirname(__DIR__) . '/resources';
     }
 
     public function addYamlImport(string $file, string $resource): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
 /**
  * Normalise une URL ou un hostname d'import en base URL + host.

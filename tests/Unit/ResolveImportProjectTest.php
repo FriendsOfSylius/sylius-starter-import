@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Import\ImportContext;
 use PHPUnit\Framework\TestCase;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 use Symfony\Component\Yaml\Yaml;
 
-use function Castor\Sylius\Import\count_import_products;
-use function Castor\Sylius\Import\import_yaml_status;
-use function Castor\Sylius\Import\resolve_import_project;
-use function Castor\Sylius\Import\update_project_config;
-use function Castor\Sylius\Import\write_project_config;
+use function SyliusStarter\Import\count_import_products;
+use function SyliusStarter\Import\import_yaml_status;
+use function SyliusStarter\Import\resolve_import_project;
+use function SyliusStarter\Import\update_project_config;
+use function SyliusStarter\Import\write_project_config;
 
 final class ResolveImportProjectTest extends TestCase
 {

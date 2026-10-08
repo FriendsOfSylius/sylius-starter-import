@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function Castor\Sylius\Import\import_ai_platform_classes_available;
-use function Castor\Sylius\Import\missing_import_ai_packages_message;
+use function SyliusStarter\Import\import_ai_platform_classes_available;
+use function SyliusStarter\Import\missing_import_ai_packages_message;
 
 final class ImportVendorTest extends TestCase
 {

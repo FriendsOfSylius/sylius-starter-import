@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Import\ImportContext;
 use PHPUnit\Framework\TestCase;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 
-use function Castor\Sylius\Import\build_admin_user_fixture;
-use function Castor\Sylius\Import\build_shop_user_fixture;
-use function Castor\Sylius\Import\generate_import_password;
-use function Castor\Sylius\Import\import_admin_user_password;
-use function Castor\Sylius\Import\write_project_config;
+use function SyliusStarter\Import\build_admin_user_fixture;
+use function SyliusStarter\Import\build_shop_user_fixture;
+use function SyliusStarter\Import\generate_import_password;
+use function SyliusStarter\Import\import_admin_user_password;
+use function SyliusStarter\Import\write_project_config;
 
 final class ImportProjectPasswordTest extends TestCase
 {

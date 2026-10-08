@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
 use Symfony\Component\Yaml\Yaml;
 

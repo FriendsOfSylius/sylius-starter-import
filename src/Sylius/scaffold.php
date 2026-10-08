@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Util\Database;
+use SyliusStarter\Core\App;
+use SyliusStarter\Core\Util\Database;
 
 use function Castor\fs;
 use function Castor\io;

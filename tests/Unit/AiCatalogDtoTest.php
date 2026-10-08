@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
-use Castor\Sylius\Import\Dto\AiCatalogExtraction;
-use Castor\Sylius\Import\Dto\AiProductEntry;
-use Castor\Sylius\Import\Dto\CollectionEntry;
-use Castor\Sylius\Import\Dto\CollectionExtraction;
-use Castor\Sylius\Import\Dto\ProductSelectionEntry;
-use Castor\Sylius\Import\Dto\ProductSelectionExtraction;
-use Castor\Sylius\Import\Dto\ProductTaxonAssignmentEntry;
-use Castor\Sylius\Import\Dto\ProductTaxonAssignmentExtraction;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use SyliusStarter\Import\Dto\AiCatalogExtraction;
+use SyliusStarter\Import\Dto\AiProductEntry;
+use SyliusStarter\Import\Dto\CollectionEntry;
+use SyliusStarter\Import\Dto\CollectionExtraction;
+use SyliusStarter\Import\Dto\ProductSelectionEntry;
+use SyliusStarter\Import\Dto\ProductSelectionExtraction;
+use SyliusStarter\Import\Dto\ProductTaxonAssignmentEntry;
+use SyliusStarter\Import\Dto\ProductTaxonAssignmentExtraction;
 use Symfony\AI\Platform\StructuredOutput\ResponseFormatFactory;
 
 final class AiCatalogDtoTest extends TestCase
@@ -45,8 +45,8 @@ final class AiCatalogDtoTest extends TestCase
     #[DataProvider('dtoClassProvider')]
     public function testDtoClassIsAutoloadableFromItsOwnFile(string $class): void
     {
-        $relative = str_replace('Castor\\Sylius\\', '', $class);
-        $expectedFile = \dirname(__DIR__, 3) . '/src/' . str_replace('\\', '/', $relative) . '.php';
+        $relative = str_replace('SyliusStarter\\Import\\', '', $class);
+        $expectedFile = \dirname(__DIR__, 2) . '/src/' . str_replace('\\', '/', $relative) . '.php';
 
         static::assertFileExists($expectedFile);
         static::assertTrue(class_exists($class));

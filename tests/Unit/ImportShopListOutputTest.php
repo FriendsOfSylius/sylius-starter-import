@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function Castor\Sylius\Import\import_shop_list_table;
-use function Castor\Sylius\Import\mode_from_import_sources;
+use function SyliusStarter\Import\import_shop_list_table;
+use function SyliusStarter\Import\mode_from_import_sources;
 
-require_once \dirname(__DIR__, 3) . '/src/Import/project.php';
+require_once \dirname(__DIR__, 2) . '/src/project.php';
 
 final class ImportShopListOutputTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
 const AI_CATALOG_SAMPLE_SIZE = 300;
 const HTML_MAX_LENGTH = 120_000;

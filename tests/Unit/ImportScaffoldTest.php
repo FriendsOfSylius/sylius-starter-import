@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Import\ImportContext;
 use PHPUnit\Framework\TestCase;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 
-use function Castor\Sylius\Import\ensure_import_scaffold;
-use function Castor\Sylius\Import\import_scaffold_marker_path;
-use function Castor\Sylius\Import\is_import_scaffold_deployed;
+use function SyliusStarter\Import\ensure_import_scaffold;
+use function SyliusStarter\Import\import_scaffold_marker_path;
+use function SyliusStarter\Import\is_import_scaffold_deployed;
 
 final class ImportScaffoldTest extends TestCase
 {
@@ -21,7 +21,7 @@ final class ImportScaffoldTest extends TestCase
     {
         $this->root = sys_get_temp_dir() . '/castor-import-scaffold-' . uniqid('', true);
         $this->previousCwd = getcwd() ?: $this->root;
-        chdir(\dirname(__DIR__, 3));
+        chdir(\dirname(__DIR__, 4));
         ImportContext::setCurrent(new ImportContext(new App('app', $this->root), 'app'));
     }
 
@@ -71,7 +71,7 @@ final class ImportScaffoldTest extends TestCase
 
     public function testImportScaffoldTemplatesIncludeMarkerFile(): void
     {
-        $templateDir = \dirname(__DIR__, 3) . '/resources/import/templates/application';
+        $templateDir = \dirname(__DIR__, 2) . '/resources/templates/application';
 
         static::assertFileExists($templateDir . '/config/sylius/fixtures/app.php');
         static::assertFileExists($templateDir . '/src/Command/ResetImportChannelCommand.php');

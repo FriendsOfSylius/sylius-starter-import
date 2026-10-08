@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function Castor\Sylius\Import\import_media_fixture_path;
+use function SyliusStarter\Import\import_media_fixture_path;
 
 final class ImportMediaFixturePathTest extends TestCase
 {

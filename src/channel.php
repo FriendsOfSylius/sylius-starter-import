@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
 function shop_hostname(?string $domain = null, ?string $subdomain = null): string
 {

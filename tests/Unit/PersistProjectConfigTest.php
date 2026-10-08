@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
-use Castor\Sylius\App;
-use Castor\Sylius\Import\ImportContext;
 use PHPUnit\Framework\TestCase;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 use Symfony\Component\Yaml\Yaml;
 
-use function Castor\Sylius\Import\persist_project_config;
-use function Castor\Sylius\Import\write_project_config;
+use function SyliusStarter\Import\persist_project_config;
+use function SyliusStarter\Import\write_project_config;
 
 final class PersistProjectConfigTest extends TestCase
 {

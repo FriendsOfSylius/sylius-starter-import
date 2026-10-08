@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import;
+namespace SyliusStarter\Import;
 
 /**
  * Import path constants usable from PSR-4 classes without relying on constants.php autoload order.

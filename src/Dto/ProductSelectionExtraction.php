@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Castor\Sylius\Import\Dto;
+namespace SyliusStarter\Import\Dto;
 
 final class ProductSelectionExtraction
 {

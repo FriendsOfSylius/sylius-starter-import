@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unit\Import;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function Castor\Sylius\Import\import_channel_reset_cli;
+use function SyliusStarter\Import\import_channel_reset_cli;
 
 final class ChannelResetCliTest extends TestCase
 {
