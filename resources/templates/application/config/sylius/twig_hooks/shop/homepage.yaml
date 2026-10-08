@@ -1,0 +1,11 @@
+sylius_twig_hooks:
+    hooks:
+        'sylius_shop.homepage.index':
+            banner:
+                template: 'shop/homepage/banner.html.twig'
+            new_collection:
+                template: 'shop/homepage/new_collection.html.twig'
+                priority: 250
+            interstice:
+                template: 'shop/homepage/interstice.html.twig'
+                priority: 50

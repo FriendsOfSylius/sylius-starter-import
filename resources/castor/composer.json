@@ -1,0 +1,13 @@
+{
+    "require": {
+        "symfony/ai-ollama-platform": "^0.12.0",
+        "symfony/ai-platform": "^0.12.0",
+        "symfony/ai-open-router-platform": "^0.12.0",
+        "symfony/dotenv": "^7.4|^8.0",
+        "symfony/form": "^7.4|^8.0",
+        "symfony/http-foundation": "^7.4|^8.0",
+        "symfony/property-access": "^7.4|^8.0",
+        "symfony/validator": "^7.4|^8.0",
+        "symfony/yaml": "^7.4|^8.0"
+    }
+}

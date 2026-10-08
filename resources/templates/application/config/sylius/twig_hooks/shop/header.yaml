@@ -1,0 +1,13 @@
+sylius_twig_hooks:
+    hooks:
+        'sylius_shop.base.header.content.logo':
+            content:
+                template: 'shop/shared/layout/header/logo.html.twig'
+
+        'sylius_shop.base.header.navbar':
+            menu:
+                enabled: false
+
+        'sylius_shop.base.header.content':
+            taxon_hamburger:
+                enabled: false

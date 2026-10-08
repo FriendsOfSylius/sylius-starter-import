@@ -1,0 +1,24 @@
+services:
+    sylius.repository.product:
+        class: App\Repository\Product\ProductRepository
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@=service("doctrine.orm.entity_manager").getClassMetadata("App\\Entity\\Product\\Product")'
+            - '@App\Import\ImportChannelAdminContext'
+        public: true
+
+    sylius.repository.product_variant:
+        class: App\Repository\Product\ProductVariantRepository
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@=service("doctrine.orm.entity_manager").getClassMetadata("App\\Entity\\Product\\ProductVariant")'
+            - '@App\Import\ImportChannelAdminContext'
+        public: true
+
+    sylius.repository.taxon:
+        class: App\Repository\Taxonomy\TaxonRepository
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@=service("doctrine.orm.entity_manager").getClassMetadata("App\\Entity\\Taxonomy\\Taxon")'
+            - '@App\Import\ImportChannelAdminContext'
+        public: true

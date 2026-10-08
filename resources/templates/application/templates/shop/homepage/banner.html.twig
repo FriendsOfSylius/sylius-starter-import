@@ -1,0 +1,6 @@
+{% set imageHeader = shop_image('imageHeader') %}
+<div class="mb-6" role="banner" aria-label="{{ 'sylius.ui.home'|trans }}">
+    {% if imageHeader %}
+        <img src="{{ imageHeader }}" alt="" class="img-fluid w-100" role="presentation">
+    {% endif %}
+</div>

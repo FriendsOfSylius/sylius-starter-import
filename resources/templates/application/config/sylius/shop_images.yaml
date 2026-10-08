@@ -1,0 +1,10 @@
+parameters:
+    app.shop_images_by_channel: []
+
+liip_imagine:
+    filter_sets:
+        sylius_shop_taxon_menu_thumbnail:
+            format: webp
+            quality: 80
+            filters:
+                thumbnail: { size: [150, 150], mode: outbound }

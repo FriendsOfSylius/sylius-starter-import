@@ -1,0 +1,31 @@
+{% if collections|length > 0 %}
+    <div class="container mb-6" role="navigation" aria-label="{{ 'sylius.ui.taxons'|trans }}">
+        <div class="d-flex flex-nowrap justify-content-between gap-2 overflow-x-auto pb-2">
+            {% for taxon in collections %}
+                <a
+                    class="flex-fill text-center text-decoration-none text-dark"
+                    href="{{ path('sylius_shop_product_index', {'slug': taxon.slug, '_locale': taxon.translation.locale}) }}"
+                    {{ sylius_test_html_attribute('homepage-collection', taxon.name) }}
+                >
+                    {% if taxon.images.first %}
+                        <div class="rounded-circle overflow-hidden mx-auto" style="width: 90px; height: 90px;">
+                            <img
+                                src="{{ asset(taxon.images.first.path|imagine_filter('sylius_shop_taxon_menu_thumbnail')) }}"
+                                alt="{{ taxon.name }}"
+                                class="w-100 h-100 object-fit-cover"
+                            >
+                        </div>
+                    {% else %}
+                        <div
+                            class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto fw-bold text-secondary"
+                            style="width: 90px; height: 90px;"
+                        >
+                            {{ taxon.name|slice(0, 1)|upper }}
+                        </div>
+                    {% endif %}
+                    <span class="fw-bold d-block mt-2 small">{{ taxon.name }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,4 @@
+{% set imageLogo = shop_image('imageLogo') %}
+{% if imageLogo %}
+    <img src="{{ imageLogo }}" alt="{{ 'sylius.ui.sylius_logo_aria'|trans }}" class="img-fluid" style="max-height: 40px;">
+{% endif %}
