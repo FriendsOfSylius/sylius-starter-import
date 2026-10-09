@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SyliusStarter\Import;
 
 use SyliusStarter\Core\App;
+use SyliusStarter\Core\PhpFile;
 use SyliusStarter\Core\Storefront\Hero;
 use SyliusStarter\Core\Util\Database;
 
@@ -36,6 +37,7 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
 
     if (is_import_scaffold_deployed($app)) {
         upgrade_import_storefront($app);
+        setup_import_admin_user_entity($app);
 
         return;
     }
@@ -75,6 +77,8 @@ function deploy_import_scaffold(): void
 
     fs()->mirror($templateDir, $targetDir, options: ['override' => false]);
 
+    setup_import_admin_user_entity(ImportContext::current()->app());
+
     Hero::install(ImportContext::current()->app());
 
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/app.php');
@@ -89,6 +93,25 @@ function deploy_import_scaffold(): void
     );
 
     import_log('Import application scaffold deployed from templates.');
+}
+
+/**
+ * sylius-standard always ships src/Entity/User/AdminUser.php (and other packages,
+ * e.g. Mollie, patch it), so the non-overriding mirror never writes ours. Wire the
+ * import channel scoping onto the existing entity instead. Idempotent.
+ */
+function setup_import_admin_user_entity(App $app): void
+{
+    $path = $app->directory() . '/src/Entity/User/AdminUser.php';
+
+    if (!is_file($path)) {
+        return;
+    }
+
+    (new PhpFile($path))
+        ->addInterface('App\\Entity\\User\\ImportChannelAdminAwareInterface')
+        ->addTrait('App\\Entity\\User\\ImportChannelAdminAwareTrait')
+        ->save();
 }
 
 /**
