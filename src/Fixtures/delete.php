@@ -32,7 +32,30 @@ function delete_import_shop(string $projectSlug): void
 function reset_import_shop_channel(string $projectSlug): void
 {
     ensure_docker_ready();
-    import_docker_compose_run(import_channel_reset_cli($projectSlug));
+
+    try {
+        import_docker_compose_run(import_channel_reset_cli($projectSlug));
+    } catch (\Throwable $exception) {
+        if (import_failure_is_missing_sylius_schema($exception)) {
+            import_log('Sylius database schema is not installed — skipped channel reset in the database.');
+
+            return;
+        }
+
+        throw $exception;
+    }
+}
+
+function import_failure_is_missing_sylius_schema(\Throwable $exception): bool
+{
+    $message = $exception->getMessage();
+
+    for ($current = $exception; null !== $current = $current->getPrevious();) {
+        $message .= $current->getMessage();
+    }
+
+    return str_contains($message, 'sylius_channel')
+        && (str_contains($message, 'does not exist') || str_contains($message, '42P01'));
 }
 
 function import_shop_exists(string $projectSlug): bool

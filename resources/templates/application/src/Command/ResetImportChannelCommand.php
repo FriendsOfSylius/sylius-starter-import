@@ -67,6 +67,12 @@ final class ResetImportChannelCommand extends Command
         $prefix = rtrim($prefix, '_');
         $shopEmail = trim((string) ($input->getOption('shop-email') ?? ''));
 
+        if (!$this->isSyliusChannelSchemaInstalled()) {
+            $io->comment('Sylius schema is not installed (sylius_channel missing) — skipping database cleanup.');
+
+            return Command::SUCCESS;
+        }
+
         /** @var ChannelInterface|null $channel */
         $channel = $this->channelRepository->findOneBy(['code' => $code]);
 
@@ -107,6 +113,15 @@ final class ResetImportChannelCommand extends Command
         $io->success(\sprintf('Channel %s reset.', $code));
 
         return Command::SUCCESS;
+    }
+
+    private function isSyliusChannelSchemaInstalled(): bool
+    {
+        try {
+            return $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['sylius_channel']);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     private function removeImportAdminUsers(string $channelCode): void

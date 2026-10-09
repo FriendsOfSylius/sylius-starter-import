@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SyliusStarter\Import;
 
+use SyliusStarter\Core\Util\Fixtures as CoreFixtures;
+
 use function Castor\io;
 
 /**
@@ -152,7 +154,7 @@ function build_channel_fixture(string $projectSlug, ?string $domain, ?string $su
                                     $code => [
                                         'name' => $name,
                                         'code' => $code,
-                                        'locales' => ['%locale%'],
+                                        'locales' => CoreFixtures::defaultChannelLocaleCodes(),
                                         'currencies' => ['EUR'],
                                         'hostname' => $hostname,
                                         'enabled' => true,

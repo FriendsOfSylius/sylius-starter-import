@@ -15,7 +15,7 @@ return App::config([
                                 'web_store' => [
                                     'name' => 'Web store',
                                     'code' => 'WEB_STORE',
-                                    'locales' => ['%locale%'],
+                                    'locales' => ['en_US', 'fr_FR'],
                                     'currencies' => ['EUR'],
                                     'hostname' => 'app.test',
                                     'enabled' => true,

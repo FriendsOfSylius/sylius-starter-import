@@ -514,7 +514,7 @@ function list_import_shops(): array
 
     foreach (discover_import_hosts() as $slug) {
         $config = load_project_config($slug);
-        $hostname = shop_hostname($slug);
+        $hostname = import_list_shop_hostname($slug);
         $hasYamlFile = is_file(castor_host_dir($slug) . '/products.yaml');
         $productCount = count_import_products($slug);
         $collectionCount = count_import_collections($slug);

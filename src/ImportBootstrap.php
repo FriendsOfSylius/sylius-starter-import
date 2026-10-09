@@ -105,21 +105,35 @@ function ensure_import_vendor(): void
 
 function ensure_import_env(): void
 {
-    $castorDir = ImportContext::current()->castorDir();
-    $envFile = $castorDir . '/.env';
-    $exampleFile = $castorDir . '/.env.example';
+    $projectRoot = ImportContext::current()->projectRoot();
+    $envFile = $projectRoot . '/.env';
+    $distFile = $projectRoot . '/.env.dist';
 
     if (is_file($envFile)) {
         return;
     }
 
-    if (!is_file($exampleFile)) {
-        throw new \RuntimeException(\sprintf('Missing "%s/.env.example".', $castorDir));
+    if (is_file($distFile)) {
+        io()->section('Creating project env file');
+        fs()->copy($distFile, $envFile);
+        import_log('Created .env from .env.dist — add secrets and AI settings to .env.local.');
+
+        return;
     }
 
-    io()->section('Creating Castor env file');
-    fs()->copy($exampleFile, $envFile);
-    import_log('Created .castor/.env from .env.example.');
+    $legacyEnv = ImportContext::current()->castorDir() . '/.env';
+
+    if (is_file($legacyEnv)) {
+        import_log('Using legacy .castor/.env — prefer project .env and .env.local at the repository root.');
+
+        return;
+    }
+
+    throw new \RuntimeException(\sprintf(
+        'Missing project env file. Create "%s" (copy from .env.dist) or "%s".',
+        $envFile,
+        $legacyEnv,
+    ));
 }
 
 function ensure_import_autoload(): void
@@ -134,8 +148,34 @@ function ensure_import_ai_ready(): void
 
 function load_castor_env(): void
 {
-    $envFile = ImportContext::current()->castorDir() . '/.env';
-
+    $projectRoot = ImportContext::current()->projectRoot();
     $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-    $dotenv->load($envFile);
+    $envFile = $projectRoot . '/.env';
+    $distFile = $projectRoot . '/.env.dist';
+    $localFile = $projectRoot . '/.env.local';
+
+    if (is_file($envFile)) {
+        $dotenv->load($envFile);
+    } elseif (is_file($distFile)) {
+        $dotenv->load($distFile);
+    }
+
+    if (is_file($localFile)) {
+        $dotenv->overload($localFile);
+
+        return;
+    }
+
+    if (is_file($envFile) || is_file($distFile)) {
+        return;
+    }
+
+    $legacyEnv = ImportContext::current()->castorDir() . '/.env';
+
+    if (!is_file($legacyEnv)) {
+        throw new \RuntimeException(\sprintf('Missing "%s" (or legacy "%s").', $envFile, $legacyEnv));
+    }
+
+    import_log('Loading AI config from legacy .castor/.env — move settings to .env.local at the project root.');
+    $dotenv->overload($legacyEnv);
 }

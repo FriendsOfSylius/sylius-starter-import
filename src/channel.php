@@ -11,6 +11,29 @@ function shop_hostname(?string $domain = null, ?string $subdomain = null): strin
     return $subdomain ? $subdomain . '.' . $domain : $domain;
 }
 
+function import_list_shop_hostname(string $slug): string
+{
+    $domain = ImportContext::tryCurrent()?->app()->domain();
+    $domain = null !== $domain && '' !== trim($domain) ? trim($domain) : 'app.test';
+
+    return shop_hostname($domain, $slug);
+}
+
+/**
+ * When --subdomain is omitted (API / non-interactive), use the project slug as shop hostname prefix.
+ * Pass an empty string explicitly to use the apex domain (no subdomain).
+ */
+function resolve_import_shop_subdomain(?string $subdomain, string $projectSlug): ?string
+{
+    if (null === $subdomain) {
+        return $projectSlug;
+    }
+
+    $trimmed = trim($subdomain);
+
+    return '' === $trimmed ? null : $trimmed;
+}
+
 function channel_code_from_slug(string $slug): string
 {
     $code = strtoupper(str_replace('-', '_', $slug));

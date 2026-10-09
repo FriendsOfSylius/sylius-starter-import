@@ -7,7 +7,7 @@ namespace SyliusStarter\Import\Tasks;
 use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
-use Jolicode\CastorApi\Attribute\AsApi;
+use Castor\Api\Attribute\AsApi;
 use SyliusStarter\Core\App;
 use SyliusStarter\Import\ImportContext;
 use Symfony\Component\Console\Question\Question;
@@ -22,7 +22,7 @@ use function SyliusStarter\Import\list_import_shops;
 use function SyliusStarter\Import\load_import_fixture_suite;
 use function SyliusStarter\Import\resolve_cli_project_slug;
 use function SyliusStarter\Import\resolve_import_project;
-use function SyliusStarter\Import\shop_hostname;
+use function SyliusStarter\Import\resolve_import_shop_subdomain;
 use function SyliusStarter\Import\write_import_shop_list;
 
 final class ImportTasks
@@ -208,12 +208,8 @@ final class ImportTasks
                         $project = io()->choice('Which fixtures would you like to generate?', $context->importProjectNames());
                     }
 
-                    if (null === $subdomain) {
-                        $exampleHostname = shop_hostname($context->app()->domain(), 'example');
-                        $subdomain = io()->askQuestion(new Question(\sprintf('Enter the name of your subdomain (optional). The "example" subdomain will generate "%s" as hostname', $exampleHostname), null));
-                    }
-
                     $projectSlug = trim($project);
+                    $subdomain = resolve_import_shop_subdomain($subdomain, $projectSlug);
 
                     if ('existing' === $mode) {
                         generate_existing_import_fixtures($projectSlug, $limit, $context->app()->domain(), $subdomain);
