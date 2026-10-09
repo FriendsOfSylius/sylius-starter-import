@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-
 use SyliusStarter\Core\App;
 use SyliusStarter\Import\ImportContext;
 
