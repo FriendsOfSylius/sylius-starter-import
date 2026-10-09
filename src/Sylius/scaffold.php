@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SyliusStarter\Import;
 
 use SyliusStarter\Core\App;
+use SyliusStarter\Core\Storefront\Hero;
 use SyliusStarter\Core\Util\Database;
 
 use function Castor\fs;
@@ -34,6 +35,8 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
     }
 
     if (is_import_scaffold_deployed($app)) {
+        upgrade_import_storefront($app);
+
         return;
     }
 
@@ -72,6 +75,8 @@ function deploy_import_scaffold(): void
 
     fs()->mirror($templateDir, $targetDir, options: ['override' => false]);
 
+    Hero::install(ImportContext::current()->app());
+
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/app.php');
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/import.php');
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/twig_hooks/**/**');
@@ -84,6 +89,38 @@ function deploy_import_scaffold(): void
     );
 
     import_log('Import application scaffold deployed from templates.');
+}
+
+/**
+ * Projects scaffolded before the shared hero slot rendered the hero from
+ * templates/shop/homepage/banner.html.twig, a path themes also write to.
+ * Move them to the core hero slot once.
+ */
+function upgrade_import_storefront(App $app): void
+{
+    if (Hero::isInstalled($app) || !is_file($app->directory() . '/config/packages/_sylius.yaml')) {
+        return;
+    }
+
+    $templateDir = ImportContext::packageResourcesDir() . '/templates/application';
+
+    Hero::install($app);
+
+    foreach ([
+        'src/Import/Storefront/ImportHeroContributor.php',
+        'config/sylius/twig_hooks/shop/homepage.yaml',
+    ] as $file) {
+        fs()->copy($templateDir . '/' . $file, $app->directory() . '/' . $file, true);
+    }
+
+    // Only remove the legacy banner if it is the one import generated, not a theme's.
+    $legacyBanner = $app->directory() . '/templates/shop/homepage/banner.html.twig';
+
+    if (is_file($legacyBanner) && str_contains((string) file_get_contents($legacyBanner), "shop_image('imageHeader')")) {
+        fs()->remove($legacyBanner);
+    }
+
+    import_log('Import storefront upgraded to the shared hero slot.');
 }
 
 function maybe_refresh_composer_autoload(): void

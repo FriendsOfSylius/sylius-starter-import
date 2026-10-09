@@ -1,11 +1,16 @@
+# The hero is a shared slot owned by sylius-starter/core (config/sylius/storefront/hero.yaml):
+# import only feeds it with data, see src/Import/Storefront/ImportHeroContributor.php.
+#
+# Hookables added by import are prefixed with "import_" so that a theme disabling a native
+# Sylius block (new_collection, latest_deals...) never hides import content by accident.
 sylius_twig_hooks:
     hooks:
         'sylius_shop.homepage.index':
-            banner:
-                template: 'shop/homepage/banner.html.twig'
             new_collection:
+                enabled: false
+            import_collections:
                 template: 'shop/homepage/new_collection.html.twig'
                 priority: 250
-            interstice:
+            import_interstice:
                 template: 'shop/homepage/interstice.html.twig'
                 priority: 50
