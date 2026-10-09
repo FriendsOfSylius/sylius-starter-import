@@ -86,6 +86,12 @@ function generate_existing_import_fixtures(?string $projectSlug, int $limit, ?st
     import_log('Building product catalog and collection names...');
 
     $catalog = build_product_catalog($products);
+    $target = persist_import_shop_target($projectSlug, $subdomain);
+    import_log(\sprintf(
+        $target['shared'] ? 'No subdomain: importing into the default channel %s.' : 'Dedicated channel %s.',
+        $target['channel'],
+    ));
+
     $productMap = build_product_map($products);
     $collectionNames = build_collection_names($collections);
 

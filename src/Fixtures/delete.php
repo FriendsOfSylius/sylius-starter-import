@@ -17,7 +17,7 @@ function delete_import_shop(string $projectSlug): void
     io()->title(\sprintf('Deleting import shop %s', $projectSlug));
     import_log(\sprintf(
         'Resetting channel %s (prefix %s).',
-        channel_code_from_slug($projectSlug),
+        import_channel_code($projectSlug),
         import_code_prefix($projectSlug),
     ));
 
@@ -34,7 +34,7 @@ function reset_import_shop_channel(string $projectSlug): void
     ensure_docker_ready();
 
     try {
-        import_docker_compose_run(import_channel_reset_cli($projectSlug));
+        import_docker_compose_run(import_shop_reset_cli($projectSlug));
     } catch (\Throwable $exception) {
         if (import_failure_is_missing_sylius_schema($exception)) {
             import_log('Sylius database schema is not installed — skipped channel reset in the database.');

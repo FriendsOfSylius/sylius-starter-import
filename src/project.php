@@ -151,6 +151,11 @@ function merge_project_passwords(array $config, ?array $existing): array
         $config[$key] = generate_import_password();
     }
 
+    // Not a password, but also written once (by fixtures:generate) and must survive rewrites.
+    if (!isset($config['shop']) && \is_array($existing['shop'] ?? null)) {
+        $config['shop'] = $existing['shop'];
+    }
+
     return $config;
 }
 
@@ -514,6 +519,7 @@ function list_import_shops(): array
 
     foreach (discover_import_hosts() as $slug) {
         $config = load_project_config($slug);
+        $target = import_shop_target($slug);
         $hostname = import_list_shop_hostname($slug);
         $hasYamlFile = is_file(castor_host_dir($slug) . '/products.yaml');
         $productCount = count_import_products($slug);
@@ -533,7 +539,7 @@ function list_import_shops(): array
             'productCount' => $productCount,
             'collectionCount' => $collectionCount,
             'hasFixtures' => project_has_generated_fixtures($slug),
-            'channelCode' => channel_code_from_slug($slug),
+            'channelCode' => $target['channel'],
             'shopUrl' => 'https://' . $hostname,
             'adminUrl' => 'https://' . $hostname . '/admin',
             'adminPassword' => isset($config['admin_password']) ? (string) $config['admin_password'] : null,

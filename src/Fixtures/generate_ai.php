@@ -46,6 +46,12 @@ function generate_ai_import_fixtures(?string $projectSlug, ?string $domain, ?str
         \count($collections),
     ));
 
+    $target = persist_import_shop_target($projectSlug, $subdomain);
+    import_log(\sprintf(
+        $target['shared'] ? 'No subdomain: importing into the default channel %s.' : 'Dedicated channel %s.',
+        $target['channel'],
+    ));
+
     $productMap = build_product_map($products);
     $taxonIndex = build_taxon_index($collections, $projectSlug);
     $styleReferencePrompt = find_first_image_prompt($products);

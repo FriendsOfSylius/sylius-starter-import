@@ -51,6 +51,7 @@ final class ResetImportChannelCommand extends Command
             ->addArgument('code', InputArgument::REQUIRED, 'Channel code (e.g. COCORICO)')
             ->addOption('prefix', null, InputOption::VALUE_REQUIRED, 'Product and taxon code prefix (defaults to the lowercased channel code)')
             ->addOption('shop-email', null, InputOption::VALUE_REQUIRED, 'Imported shop user email to remove')
+            ->addOption('keep-channel', null, InputOption::VALUE_NONE, 'Shared channel (e.g. WEB_STORE): only remove the prefixed catalog, keep the channel and its other data')
         ;
     }
 
@@ -76,6 +77,24 @@ final class ResetImportChannelCommand extends Command
         /** @var ChannelInterface|null $channel */
         $channel = $this->channelRepository->findOneBy(['code' => $code]);
 
+        if ($input->getOption('keep-channel')) {
+            $io->comment(\sprintf('Removing catalog prefixed %s from channel %s (channel kept).', $prefix, $code));
+
+            $this->removeImportAdminUsers($code, $prefix);
+            $this->removeImportShopUser($shopEmail);
+            $this->removeOrdersWithProductPrefix($prefix);
+            $this->removeProductsByPrefix($prefix);
+            $this->releaseMenuTaxons($prefix);
+            $this->entityManager->flush();
+
+            $this->removeTaxons($prefix);
+            $this->entityManager->flush();
+
+            $io->success(\sprintf('Catalog %s removed from channel %s.', $prefix, $code));
+
+            return Command::SUCCESS;
+        }
+
         if (null === $channel) {
             $io->comment(\sprintf(
                 'Channel %s does not exist — cleaning orphaned catalog (prefix %s).',
@@ -86,6 +105,8 @@ final class ResetImportChannelCommand extends Command
             $this->removeImportAdminUsers($code);
             $this->removeImportShopUser($shopEmail);
             $this->removeProductsByPrefix($prefix);
+            $this->releaseMenuTaxons($prefix);
+            $this->entityManager->flush();
             $this->removeTaxons($prefix);
             $this->entityManager->flush();
 
@@ -105,6 +126,7 @@ final class ResetImportChannelCommand extends Command
         $this->entityManager->flush();
 
         $this->entityManager->remove($channel);
+        $this->releaseMenuTaxons($prefix);
         $this->entityManager->flush();
 
         $this->removeTaxons($prefix);
@@ -124,16 +146,23 @@ final class ResetImportChannelCommand extends Command
         }
     }
 
-    private function removeImportAdminUsers(string $channelCode): void
+    private function removeImportAdminUsers(string $channelCode, ?string $prefix = null): void
     {
-        $adminUsers = $this->entityManager->createQueryBuilder()
+        $queryBuilder = $this->entityManager->createQueryBuilder()
             ->select('adminUser')
             ->from(AdminUser::class, 'adminUser')
             ->andWhere('adminUser.channelCode = :channelCode')
             ->setParameter('channelCode', $channelCode)
-            ->getQuery()
-            ->getResult()
         ;
+
+        if (null !== $prefix) {
+            $queryBuilder
+                ->andWhere('adminUser.importCodePrefix = :prefix')
+                ->setParameter('prefix', $prefix)
+            ;
+        }
+
+        $adminUsers = $queryBuilder->getQuery()->getResult();
 
         foreach ($adminUsers as $adminUser) {
             $this->entityManager->remove($adminUser);
@@ -218,6 +247,44 @@ final class ResetImportChannelCommand extends Command
 
         foreach ($products as $product) {
             $this->entityManager->remove($product);
+        }
+    }
+
+    private function removeOrdersWithProductPrefix(string $prefix): void
+    {
+        $orders = $this->entityManager->createQueryBuilder()
+            ->select('o')
+            ->distinct()
+            ->from(Order::class, 'o')
+            ->innerJoin('o.items', 'item')
+            ->innerJoin('item.variant', 'variant')
+            ->innerJoin('variant.product', 'product')
+            ->andWhere('product.code LIKE :like')
+            ->setParameter('like', $prefix . '_%')
+            ->getQuery()
+            ->getResult()
+        ;
+
+        foreach ($orders as $order) {
+            $this->entityManager->remove($order);
+        }
+    }
+
+    /**
+     * Channels kept alive (e.g. WEB_STORE) may use an imported taxon as shop menu:
+     * point them back to the default "category" root before the taxons go.
+     */
+    private function releaseMenuTaxons(string $prefix): void
+    {
+        $fallback = $this->entityManager->getRepository(Taxon::class)->findOneBy(['code' => 'category']);
+
+        /** @var ChannelInterface $channel */
+        foreach ($this->channelRepository->findAll() as $channel) {
+            $menuTaxonCode = $channel->getMenuTaxon()?->getCode();
+
+            if (null !== $menuTaxonCode && str_starts_with($menuTaxonCode, $prefix . '_')) {
+                $channel->setMenuTaxon($fallback);
+            }
         }
     }
 

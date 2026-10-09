@@ -38,6 +38,7 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
     if (is_import_scaffold_deployed($app)) {
         upgrade_import_storefront($app);
         setup_import_admin_user_entity($app);
+        sync_import_owned_files($app);
 
         return;
     }
@@ -93,6 +94,34 @@ function deploy_import_scaffold(): void
     );
 
     import_log('Import application scaffold deployed from templates.');
+}
+
+/**
+ * Files owned by the import package (not meant to be customized): existing copies are
+ * refreshed on every run so already scaffolded apps get fixes, unlike the non-overriding
+ * initial mirror. Missing files are not recreated (a deployed scaffold is never redeployed).
+ */
+const IMPORT_OWNED_APPLICATION_FILES = [
+    'src/Command/ResetImportChannelCommand.php',
+    'src/Fixture/ImportChannelAccessFixture.php',
+];
+
+function sync_import_owned_files(App $app): void
+{
+    $templateDir = ImportContext::packageResourcesDir() . '/templates/application';
+
+    foreach (IMPORT_OWNED_APPLICATION_FILES as $file) {
+        $source = $templateDir . '/' . $file;
+        $target = $app->directory() . '/' . $file;
+
+        if (is_file($source) && is_file($target) && file_get_contents($source) !== file_get_contents($target)) {
+            if (!copy($source, $target)) {
+                throw new \RuntimeException(\sprintf('Failed to update "%s".', $target));
+            }
+
+            import_log(\sprintf('Updated %s.', $file));
+        }
+    }
 }
 
 /**

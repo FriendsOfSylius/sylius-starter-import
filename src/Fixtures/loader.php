@@ -18,15 +18,18 @@ function load_import_fixture_suite(string $projectSlug): void
     write_import_suite_loader($projectSlug);
     ensure_docker_ready();
 
-    $channelCode = channel_code_from_slug($projectSlug);
+    $target = import_shop_target($projectSlug);
 
     io()->title(\sprintf('Loading import fixtures for %s', $projectSlug));
     import_log(\sprintf(
-        'Resetting channel %s if it already exists, then loading suite import.',
-        $channelCode,
+        $target['shared']
+            ? 'Removing previously imported %2$s catalog from channel %1$s (the channel is kept), then loading suite import.'
+            : 'Resetting channel %s if it already exists, then loading suite import.',
+        $target['channel'],
+        import_code_prefix($projectSlug),
     ));
 
-    import_docker_compose_run(import_channel_reset_cli($projectSlug));
+    import_docker_compose_run(import_shop_reset_cli($projectSlug));
     import_docker_compose_run('php bin/console sylius:fixtures:load import -n');
     import_log('Fixture suite loaded successfully.');
 }

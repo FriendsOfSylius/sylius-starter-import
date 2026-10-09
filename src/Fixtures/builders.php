@@ -180,8 +180,15 @@ function build_channel_fixture(string $projectSlug, ?string $domain, ?string $su
 /**
  * @return array<string, mixed>
  */
-function build_channel_access_fixture(string $projectSlug): array
+function build_channel_access_fixture(string $projectSlug, ?string $channelCode = null, bool $setMenuTaxon = false): array
 {
+    $item = ['channel' => $channelCode ?? channel_code_from_slug($projectSlug)];
+
+    if ($setMenuTaxon) {
+        // Existing channel: point its shop menu at the imported catalog.
+        $item['menu_taxon'] = shop_menu_taxon_code($projectSlug);
+    }
+
     return [
         'sylius_fixtures' => [
             'suites' => [
@@ -190,9 +197,7 @@ function build_channel_access_fixture(string $projectSlug): array
                         'import_channel_access' => [
                             'name' => 'import_channel_access',
                             'options' => [
-                                'custom' => [
-                                    ['channel' => channel_code_from_slug($projectSlug)],
-                                ],
+                                'custom' => [$item],
                             ],
                         ],
                     ],
@@ -372,7 +377,7 @@ function build_product_fixture_entries(
         $slug = resolve_product_slug($code, $usedSlugs);
         $rootTaxon = '' !== $projectSlug ? shop_menu_taxon_code($projectSlug) : 'category';
         $taxonCode = $taxonAssignments[$productId] ?? $rootTaxon;
-        $channelCode = '' !== $projectSlug ? channel_code_from_slug($projectSlug) : 'WEB_STORE';
+        $channelCode = '' !== $projectSlug ? import_channel_code($projectSlug) : IMPORT_DEFAULT_CHANNEL_CODE;
         $description = $resolveDescription($product);
 
         $entry = [

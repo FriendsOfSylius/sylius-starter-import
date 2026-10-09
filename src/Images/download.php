@@ -148,7 +148,7 @@ function build_all_shop_images_config(): ?array
             continue;
         }
 
-        $byChannel[channel_code_from_slug($slug)] = $channelImages;
+        $byChannel[import_channel_code($slug)] = $channelImages;
     }
 
     if ([] === $byChannel) {

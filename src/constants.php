@@ -17,6 +17,9 @@ const IMPORT_COLLECTION_AI_THRESHOLD = 3;
 const IMPORT_LOCALE_PREFERENCE = ['fr', 'en', 'es', 'de', 'it', 'nl'];
 const IMPORT_IMAGE_MAX_DIMENSION = 2048;
 
+/** Channel created by the Sylius default fixtures, served on the app main domain. */
+const IMPORT_DEFAULT_CHANNEL_CODE = 'WEB_STORE';
+
 /** Host path of import payloads, relative to the Castor project root. */
 const IMPORT_VAR_HOST_DIR = ImportPaths::VAR_HOST_DIR;
 

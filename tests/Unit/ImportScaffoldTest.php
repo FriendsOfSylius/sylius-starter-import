@@ -69,6 +69,24 @@ final class ImportScaffoldTest extends TestCase
         static::assertFileDoesNotExist($this->root . '/src/Command/ResetImportChannelCommand.php');
     }
 
+    public function testEnsureImportScaffoldRefreshesExistingOwnedFiles(): void
+    {
+        $app = new App('app', $this->root);
+        $marker = import_scaffold_marker_path($app);
+        $command = $this->root . '/src/Command/ResetImportChannelCommand.php';
+        $template = \dirname(__DIR__, 2) . '/resources/templates/application/src/Command/ResetImportChannelCommand.php';
+
+        static::assertTrue(mkdir(\dirname($marker), 0o775, true));
+        static::assertNotFalse(file_put_contents($marker, "<?php\n\nreturn [];\n"));
+        static::assertTrue(mkdir(\dirname($command), 0o775, true));
+        static::assertNotFalse(file_put_contents($command, "<?php\n\n// outdated\n"));
+
+        ensure_import_scaffold($app, 'app');
+
+        static::assertFileEquals($template, $command);
+        static::assertFileDoesNotExist($this->root . '/src/Fixture/ImportChannelAccessFixture.php');
+    }
+
     public function testImportScaffoldTemplatesIncludeMarkerFile(): void
     {
         $templateDir = \dirname(__DIR__, 2) . '/resources/templates/application';

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Fixture;
 
+use App\Entity\Taxonomy\Taxon;
+use Doctrine\ORM\EntityManagerInterface;
 use Sylius\Bundle\FixturesBundle\Fixture\AbstractFixture;
 use Sylius\Component\Channel\Repository\ChannelRepositoryInterface;
 use Sylius\Component\Core\Model\ChannelInterface;
@@ -27,6 +29,7 @@ final class ImportChannelAccessFixture extends AbstractFixture
         private readonly ChannelRepositoryInterface $channelRepository,
         private readonly PaymentMethodRepositoryInterface $paymentMethodRepository,
         private readonly ShippingMethodRepositoryInterface $shippingMethodRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         $this->optionsResolver = (new OptionsResolver())
             ->setDefault('custom', [])
@@ -60,6 +63,17 @@ final class ImportChannelAccessFixture extends AbstractFixture
                 continue;
             }
 
+            $menuTaxonCode = trim((string) ($item['menu_taxon'] ?? ''));
+
+            if ('' !== $menuTaxonCode) {
+                /** @var Taxon|null $menuTaxon */
+                $menuTaxon = $this->entityManager->getRepository(Taxon::class)->findOneBy(['code' => $menuTaxonCode]);
+
+                if (null !== $menuTaxon) {
+                    $channel->setMenuTaxon($menuTaxon);
+                }
+            }
+
             foreach ($this->paymentMethodRepository->findAll() as $method) {
                 if (!$method->hasChannel($channel)) {
                     $method->addChannel($channel);
@@ -72,6 +86,8 @@ final class ImportChannelAccessFixture extends AbstractFixture
                 }
             }
         }
+
+        $this->entityManager->flush();
     }
 
     protected function configureOptionsNode(ArrayNodeDefinition $optionsNode): void
@@ -82,6 +98,7 @@ final class ImportChannelAccessFixture extends AbstractFixture
                     ->arrayPrototype()
                         ->children()
                             ->scalarNode('channel')->isRequired()->cannotBeEmpty()->end()
+                            ->scalarNode('menu_taxon')->defaultNull()->end()
                         ->end()
                     ->end()
                 ->end()
