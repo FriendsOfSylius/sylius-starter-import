@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import;
+namespace Sylius\Starter\Import;
 
 require_once __DIR__ . '/constants.php';
 require_once __DIR__ . '/url.php';

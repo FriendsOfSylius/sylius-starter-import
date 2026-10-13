@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import\Tests\Unit;
+namespace Sylius\Starter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SyliusStarter\Core\App;
-use SyliusStarter\Import\ImportContext;
-use SyliusStarter\Import\Tests\CastorContainerTrait;
+use Sylius\Starter\Core\App;
+use Sylius\Starter\Import\ImportContext;
+use Sylius\Starter\Import\Tests\CastorContainerTrait;
 
-use function SyliusStarter\Import\build_all_shop_images_config;
-use function SyliusStarter\Import\build_shop_channel_images;
-use function SyliusStarter\Import\regenerate_shop_images_config;
+use function Sylius\Starter\Import\build_all_shop_images_config;
+use function Sylius\Starter\Import\build_shop_channel_images;
+use function Sylius\Starter\Import\regenerate_shop_images_config;
 
 final class ShopImagesConfigTest extends TestCase
 {

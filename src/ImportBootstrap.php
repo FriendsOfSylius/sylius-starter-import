@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import;
+namespace Sylius\Starter\Import;
 
 use function Castor\context;
 use function Castor\fs;

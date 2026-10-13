@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import;
+namespace Sylius\Starter\Import;
 
-use SyliusStarter\Import\Dto\AiCatalogExtraction;
-use SyliusStarter\Import\Dto\AiProductEntry;
-use SyliusStarter\Import\Dto\CollectionEntry;
+use Sylius\Starter\Import\Dto\AiCatalogExtraction;
+use Sylius\Starter\Import\Dto\AiProductEntry;
+use Sylius\Starter\Import\Dto\CollectionEntry;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\Component\Yaml\Yaml;

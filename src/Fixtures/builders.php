@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import;
+namespace Sylius\Starter\Import;
 
-use SyliusStarter\Core\Util\Fixtures as CoreFixtures;
+use Sylius\Starter\Core\Util\Fixtures as CoreFixtures;
 
 use function Castor\io;
 

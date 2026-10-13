@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import;
+namespace Sylius\Starter\Import;
 
-use SyliusStarter\Core\App;
-use SyliusStarter\Core\PhpFile;
-use SyliusStarter\Core\Storefront\Hero;
-use SyliusStarter\Core\Util\Database;
+use Sylius\Starter\Core\App;
+use Sylius\Starter\Core\PhpFile;
+use Sylius\Starter\Core\Storefront\Hero;
+use Sylius\Starter\Core\Util\Database;
 
 use function Castor\fs;
 use function Castor\io;

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import\Tests\Unit;
+namespace Sylius\Starter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SyliusStarter\Core\App;
-use SyliusStarter\Import\ImportContext;
+use Sylius\Starter\Core\App;
+use Sylius\Starter\Import\ImportContext;
 use Symfony\Component\Yaml\Yaml;
 
-use function SyliusStarter\Import\count_import_products;
-use function SyliusStarter\Import\import_yaml_status;
-use function SyliusStarter\Import\resolve_import_project;
-use function SyliusStarter\Import\update_project_config;
-use function SyliusStarter\Import\write_project_config;
+use function Sylius\Starter\Import\count_import_products;
+use function Sylius\Starter\Import\import_yaml_status;
+use function Sylius\Starter\Import\resolve_import_project;
+use function Sylius\Starter\Import\update_project_config;
+use function Sylius\Starter\Import\write_project_config;
 
 final class ResolveImportProjectTest extends TestCase
 {

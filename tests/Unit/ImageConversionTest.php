@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import\Tests\Unit;
+namespace Sylius\Starter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function SyliusStarter\Import\convert_image_to_webp;
+use function Sylius\Starter\Import\convert_image_to_webp;
 
 require_once \dirname(__DIR__, 2) . '/src/constants.php';
 require_once \dirname(__DIR__, 2) . '/src/Images/download.php';

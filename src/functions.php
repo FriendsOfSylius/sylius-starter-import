@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import;
+namespace Sylius\Starter\Import;
 
-use SyliusStarter\Core\App;
-use SyliusStarter\Core\Service\SyliusService;
-use SyliusStarter\Core\Task\TaskProviderRegistry;
-use SyliusStarter\Core\Util\Docker;
-use SyliusStarter\Core\Util\Fixtures;
-use SyliusStarter\Import\Tasks\ImportTasks;
+use Sylius\Starter\Core\App;
+use Sylius\Starter\Core\Service\SyliusService;
+use Sylius\Starter\Core\Task\TaskProviderRegistry;
+use Sylius\Starter\Core\Util\Docker;
+use Sylius\Starter\Core\Util\Fixtures;
+use Sylius\Starter\Import\Tasks\ImportTasks;
 
 TaskProviderRegistry::register(
     'import',

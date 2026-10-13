@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SyliusStarter\Import\Tests;
+namespace Sylius\Starter\Import\Tests;
 
 use Castor\Container;
 use Symfony\Component\Console\Input\ArrayInput;
