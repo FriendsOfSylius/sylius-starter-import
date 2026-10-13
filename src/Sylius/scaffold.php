@@ -125,8 +125,8 @@ function sync_import_owned_files(App $app): void
 }
 
 /**
- * sylius-standard always ships src/Entity/User/AdminUser.php (and other packages,
- * e.g. Mollie, patch it), so the non-overriding mirror never writes ours. Wire the
+ * sylius-standard always ships src/Entity/User/AdminUser.php (and other packages
+ * patch it), so the non-overriding mirror never writes ours. Wire the
  * import channel scoping onto the existing entity instead. Idempotent.
  */
 function setup_import_admin_user_entity(App $app): void
