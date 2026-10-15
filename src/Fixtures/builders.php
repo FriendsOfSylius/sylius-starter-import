@@ -238,39 +238,54 @@ function build_shop_user_fixture(string $projectSlug): array
 }
 
 /**
+ * Downloads the collection image when there is one, otherwise generates it in the visual style of the product images
+ * when the products are described by image prompts (AI-built catalog).
+ *
  * @param array<int, array{code: string, name: string, slug: string, image: ?string}> $taxonIndex
  *
  * @return array<string, mixed>
  */
-function build_taxon_image_fixture(array $taxonIndex, string $host): array
+function build_taxon_image_fixture(array $taxonIndex, string $projectSlug, ?string $styleReferencePrompt = null): array
 {
     $custom = [];
-    $withImage = 0;
 
-    foreach ($taxonIndex as $taxon) {
-        if (null === $taxon['image'] || '' === $taxon['image']) {
-            continue;
-        }
-
-        ++$withImage;
-        $imagePath = download_import_image($taxon['image'], $host, 'taxon_' . $taxon['code']);
-
-        if (null === $imagePath) {
-            continue;
-        }
-
-        $custom[] = [
-            'taxon' => $taxon['code'],
-            'path' => $imagePath,
-            'type' => 'main',
-        ];
+    if (stream_isatty(\STDOUT)) {
+        io()->progressStart(\count($taxonIndex));
     }
 
-    import_log(\sprintf(
-        'Taxon images: %d/%d downloaded and converted to WebP.',
-        \count($custom),
-        $withImage,
-    ));
+    foreach ($taxonIndex as $taxon) {
+        $code = 'taxon_' . $taxon['code'];
+        $imagePath = null;
+
+        if (null !== $taxon['image'] && '' !== $taxon['image']) {
+            $imagePath = download_import_image($taxon['image'], $projectSlug, $code, quiet: true);
+        } elseif (null !== $styleReferencePrompt) {
+            $imagePath = generate_import_image_from_prompt(
+                \sprintf('Category thumbnail for "%s", same visual style as: %s', $taxon['name'], $styleReferencePrompt),
+                $projectSlug,
+                $code,
+                quiet: true,
+            );
+        }
+
+        if (null !== $imagePath) {
+            $custom[] = [
+                'taxon' => $taxon['code'],
+                'path' => $imagePath,
+                'type' => 'main',
+            ];
+        }
+
+        if (stream_isatty(\STDOUT)) {
+            io()->progressAdvance();
+        }
+    }
+
+    if (stream_isatty(\STDOUT)) {
+        io()->progressFinish();
+    }
+
+    import_log(\sprintf('Taxon images: %d/%d taxon(s) with an image.', \count($custom), \count($taxonIndex)));
 
     return [
         'sylius_fixtures' => [
@@ -295,21 +310,15 @@ function build_taxon_image_fixture(array $taxonIndex, string $host): array
  * @param array<int, string>               $taxonAssignments
  * @param array<int, int>                  $priceAssignments
  * @param int[]                              $promoProductIds
- * @param callable(array<string, mixed>): string $resolveDescription
- * @param callable(array<string, mixed>, string, string): ?string $resolveImagePath
  *
  * @return array{0: array<string, mixed>, 1: array<string, mixed>}
  */
-function build_product_fixture_entries(
+function build_product_fixtures(
     array $products,
+    string $projectSlug,
     array $taxonAssignments,
     array $priceAssignments,
-    array $promoProductIds,
-    callable $resolveDescription,
-    callable $resolveImagePath,
-    string $imageFailureMessage,
-    string $successLogSuffix = '',
-    string $projectSlug = '',
+    array $promoProductIds = [],
 ): array {
     $custom = [];
     $priceCustom = [];
@@ -346,7 +355,7 @@ function build_product_fixture_entries(
         $rootTaxon = '' !== $projectSlug ? shop_menu_taxon_code($projectSlug) : 'category';
         $taxonCode = $taxonAssignments[$productId] ?? $rootTaxon;
         $channelCode = '' !== $projectSlug ? import_channel_code($projectSlug) : IMPORT_DEFAULT_CHANNEL_CODE;
-        $description = $resolveDescription($product);
+        $description = resolve_product_description($product);
 
         $entry = [
             'name' => $title,
@@ -360,7 +369,7 @@ function build_product_fixture_entries(
             'tax_category' => 'other',
         ];
 
-        $imagePath = $resolveImagePath($product, $code, $slug);
+        $imagePath = resolve_product_image($product, $projectSlug, $code);
 
         if (null !== $imagePath) {
             $entry['images'] = [
@@ -400,15 +409,14 @@ function build_product_fixture_entries(
         io()->progressFinish();
     }
     import_log(\sprintf(
-        'Product fixtures: %d product(s), %d with image(s), %d on promo%s.',
+        'Product fixtures: %d product(s), %d with image(s), %d on promo (original price +33%%).',
         \count($custom),
         $imageCount,
         $promoCount,
-        $successLogSuffix,
     ));
 
     if ($imageFailures > 0) {
-        io()->warning(\sprintf('%d product image(s) could not be %s.', $imageFailures, $imageFailureMessage));
+        io()->warning(\sprintf('%d product image(s) could not be downloaded or generated.', $imageFailures));
     }
 
     return wrap_product_fixture_config($custom, $priceCustom);
@@ -459,73 +467,33 @@ function wrap_product_fixture_config(array $custom, array $priceCustom): array
 }
 
 /**
- * @param array<int, array<string, mixed>> $products
- * @param array<int, string>               $taxonAssignments
- * @param array<int, int>                  $priceAssignments
- * @param int[]                              $promoProductIds
+ * A product imported from an existing site carries an image URL, an AI-built one carries an image prompt.
  *
- * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+ * @param array<string, mixed> $product
  */
-function build_product_fixtures(
-    array $products,
-    string $host,
-    array $taxonAssignments,
-    array $priceAssignments,
-    array $promoProductIds = [],
-): array {
-    return build_product_fixture_entries(
-        $products,
-        $taxonAssignments,
-        $priceAssignments,
-        $promoProductIds,
-        static fn(array $product): string => trim((string) ($product['title'] ?? '')),
-        static function (array $product, string $code) use ($host): ?string {
-            $imageUrl = trim((string) ($product['image'] ?? ''));
+function resolve_product_image(array $product, string $projectSlug, string $code): ?string
+{
+    $imageUrl = trim((string) ($product['image'] ?? ''));
 
-            if ('' === $imageUrl) {
-                return null;
-            }
+    if ('' !== $imageUrl) {
+        return download_import_image($imageUrl, $projectSlug, $code, quiet: true);
+    }
 
-            return download_import_image($imageUrl, $host, $code, quiet: true);
-        },
-        'downloaded or converted',
-        ' (original price +33%)',
-        $host,
-    );
+    $imagePrompt = trim((string) ($product['image_prompt'] ?? ''));
+
+    if ('' !== $imagePrompt) {
+        return generate_import_image_from_prompt($imagePrompt, $projectSlug, $code, quiet: true);
+    }
+
+    return null;
 }
 
 /**
- * @param array<int, array<string, mixed>> $products
- * @param array<int, string>               $taxonAssignments
- * @param array<int, int>                  $priceAssignments
- * @param int[]                              $promoProductIds
- *
- * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+ * @param array<string, mixed> $product
  */
-function build_ai_product_fixtures(
-    array $products,
-    string $projectSlug,
-    array $taxonAssignments,
-    array $priceAssignments,
-    array $promoProductIds = [],
-): array {
-    return build_product_fixture_entries(
-        $products,
-        $taxonAssignments,
-        $priceAssignments,
-        $promoProductIds,
-        static fn(array $product): string => trim((string) ($product['description'] ?? $product['title'] ?? '')),
-        static function (array $product, string $code) use ($projectSlug): ?string {
-            $imagePrompt = trim((string) ($product['image_prompt'] ?? ''));
+function resolve_product_description(array $product): string
+{
+    $description = trim((string) ($product['description'] ?? ''));
 
-            if ('' === $imagePrompt) {
-                return null;
-            }
-
-            return generate_import_image_from_prompt($imagePrompt, $projectSlug, $code, quiet: true);
-        },
-        'generated',
-        '',
-        $projectSlug,
-    );
+    return '' !== $description ? $description : trim((string) ($product['title'] ?? ''));
 }

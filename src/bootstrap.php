@@ -20,5 +20,4 @@ require_once __DIR__ . '/Fixtures/context.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/helpers_ai.php';
 require_once __DIR__ . '/Fixtures/builders.php';
-require_once __DIR__ . '/Fixtures/generate_existing.php';
-require_once __DIR__ . '/Fixtures/generate_ai.php';
+require_once __DIR__ . '/Fixtures/generate.php';

@@ -343,7 +343,7 @@ function normalize_ai_products(array $products, array $collections, int $limit):
     return $normalized;
 }
 
-function find_first_image_prompt(array $products): string
+function find_first_image_prompt(array $products): ?string
 {
     foreach ($products as $product) {
         $prompt = trim((string) ($product['image_prompt'] ?? ''));
@@ -353,7 +353,7 @@ function find_first_image_prompt(array $products): string
         }
     }
 
-    return 'e-commerce product photoshoot, white background, soft natural light';
+    return null;
 }
 
 /**
@@ -384,62 +384,6 @@ function build_ai_product_assignments(array $productMap, array $taxonIndex): arr
     $promoProductIds = pick_promo_product_ids($catalog);
 
     return [$taxonAssignments, $priceAssignments, $promoProductIds, array_values($productMap)];
-}
-
-/**
- * @param array<int, array{code: string, name: string, slug: string, image: ?string}> $taxonIndex
- */
-function build_ai_taxon_image_fixture(array $taxonIndex, string $projectSlug, string $styleReferencePrompt): array
-{
-    $custom = [];
-
-    if (stream_isatty(\STDOUT)) {
-        io()->progressStart(\count($taxonIndex));
-    }
-
-    foreach ($taxonIndex as $taxon) {
-        $prompt = \sprintf(
-            'Category thumbnail for "%s", same visual style as: %s',
-            $taxon['name'],
-            $styleReferencePrompt,
-        );
-        $imagePath = generate_import_image_from_prompt($prompt, $projectSlug, 'taxon_' . $taxon['code']);
-
-        if (null !== $imagePath) {
-            $custom[] = [
-                'taxon' => $taxon['code'],
-                'path' => $imagePath,
-                'type' => 'main',
-            ];
-        }
-
-        if (stream_isatty(\STDOUT)) {
-            io()->progressAdvance();
-        }
-    }
-
-    if (stream_isatty(\STDOUT)) {
-        io()->progressFinish();
-    }
-
-    import_log(\sprintf('Taxon images: %d/%d generated.', \count($custom), \count($taxonIndex)));
-
-    return [
-        'sylius_fixtures' => [
-            'suites' => [
-                'import' => [
-                    'fixtures' => [
-                        'import_taxon_images' => [
-                            'name' => 'import_taxon_image',
-                            'options' => [
-                                'custom' => $custom,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ];
 }
 
 function generate_import_image_from_prompt(string $prompt, string $projectSlug, string $code, bool $quiet = false): ?string

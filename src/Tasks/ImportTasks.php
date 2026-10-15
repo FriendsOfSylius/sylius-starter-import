@@ -15,8 +15,7 @@ use Symfony\Component\Console\Question\Question;
 use function Castor\io;
 use function Sylius\Starter\Import\build_ai_import_data;
 use function Sylius\Starter\Import\delete_import_shop;
-use function Sylius\Starter\Import\generate_ai_import_fixtures;
-use function Sylius\Starter\Import\generate_existing_import_fixtures;
+use function Sylius\Starter\Import\generate_import_fixtures;
 use function Sylius\Starter\Import\import_log;
 use function Sylius\Starter\Import\list_import_shops;
 use function Sylius\Starter\Import\load_import_fixture_suite;
@@ -185,8 +184,9 @@ final class ImportTasks
             'task' => new AsTask('generate', 'sylius:import:fixtures', 'Generate Sylius import fixture PHP files from YAML (no database load)'),
             /** @phpstan-ignore-next-line  */
             'function' => #[AsApi(async: true)] function (
+                // Ignored: the catalog source is read from the project YAML. Kept for existing callers.
                 #[AsArgument]
-                string $mode = 'existing',
+                ?string $mode = null,
                 #[AsOption]
                 ?string $project = null,
                 #[AsOption]
@@ -194,15 +194,8 @@ final class ImportTasks
                 #[AsOption]
                 int $limit = 100,
             ): void {
-                $this->withContext(static function () use ($mode, $project, $limit, $subdomain): void {
+                $this->withContext(static function () use ($project, $limit, $subdomain): void {
                     $context = ImportContext::current();
-                    $mode = strtolower(trim($mode));
-
-                    if (!\in_array($mode, ['existing', 'ai'], true)) {
-                        io()->error('Mode must be "existing" or "ai".');
-
-                        return;
-                    }
 
                     if (null === $project || '' === trim($project)) {
                         $project = io()->choice('Which fixtures would you like to generate?', $context->importProjectNames());
@@ -211,13 +204,7 @@ final class ImportTasks
                     $projectSlug = trim($project);
                     $subdomain = resolve_import_shop_subdomain($subdomain, $projectSlug);
 
-                    if ('existing' === $mode) {
-                        generate_existing_import_fixtures($projectSlug, $limit, $context->app()->domain(), $subdomain);
-
-                        return;
-                    }
-
-                    generate_ai_import_fixtures($projectSlug, $context->app()->domain(), $subdomain);
+                    generate_import_fixtures($projectSlug, $limit, $context->app()->domain(), $subdomain);
                 });
             },
         ];
