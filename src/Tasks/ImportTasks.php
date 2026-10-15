@@ -75,7 +75,7 @@ final class ImportTasks
         yield [
             'task' => new AsTask('delete', 'sylius:import', 'Delete an imported shop, its files, and the Sylius channel catalog'),
             /** @phpstan-ignore-next-line  */
-            'function' => #[AsApi(async: true)] function (
+            'function' => #[AsApi(async: true, lock: ['shop:{project}', 'sylius:database'])] function (
                 #[AsArgument]
                 ?string $project = null,
             ): void {
@@ -127,7 +127,7 @@ final class ImportTasks
         yield [
             'task' => new AsTask('build', 'sylius:import:ai', 'Generate products and collections YAML from a project description via AI'),
             /** @phpstan-ignore-next-line  */
-            'function' => #[AsApi(async: true)] function (
+            'function' => #[AsApi(async: true, lock: 'shop:{project}')] function (
                 #[AsOption]
                 ?string $project = null,
                 #[AsOption]
@@ -185,7 +185,7 @@ final class ImportTasks
         yield [
             'task' => new AsTask('generate', 'sylius:import:fixtures', 'Generate Sylius import fixture PHP files from YAML (no database load)'),
             /** @phpstan-ignore-next-line  */
-            'function' => #[AsApi(async: true)] function (
+            'function' => #[AsApi(async: true, lock: 'shop:{project}')] function (
                 // Ignored: the catalog source is read from the project YAML. Kept for existing callers.
                 #[AsArgument]
                 ?string $mode = null,
@@ -220,7 +220,7 @@ final class ImportTasks
         yield [
             'task' => new AsTask('load', 'sylius:import:fixtures', 'Load generated import fixtures into Sylius'),
             /** @phpstan-ignore-next-line  */
-            'function' => #[AsApi(async: true)] function (
+            'function' => #[AsApi(async: true, lock: ['shop:{project}', 'sylius:database'])] function (
                 #[AsOption]
                 ?string $project = null,
             ): void {
