@@ -14,6 +14,8 @@ const IMPORT_PROMO_PRODUCT_COUNT = 5;
 const IMPORT_PROMO_ORIGINAL_PRICE_RATIO = 1.33;
 const IMPORT_PLATFORM_SHOPIFY_THRESHOLD = 3;
 const IMPORT_COLLECTION_AI_THRESHOLD = 3;
+// Imported taxons are all menu children: beyond this, theme menus wrap over many lines.
+const IMPORT_MENU_TAXON_LIMIT = 12;
 const IMPORT_LOCALE_PREFERENCE = ['fr', 'en', 'es', 'de', 'it', 'nl'];
 const IMPORT_IMAGE_MAX_DIMENSION = 2048;
 

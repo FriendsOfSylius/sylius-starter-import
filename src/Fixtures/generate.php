@@ -74,6 +74,15 @@ function generate_import_fixtures(?string $projectSlug, int $limit, ?string $dom
 
     [$taxonAssignments, $priceAssignments, $promoProductIds, $selectedProducts] = $selection;
 
+    $taxonCount = \count($taxonIndex);
+    [$taxonIndex, $taxonAssignments] = limit_menu_taxons($taxonIndex, $taxonAssignments);
+    import_log(\sprintf(
+        'Menu taxons: %d/%d kept (those holding selected products, %d at most).',
+        \count($taxonIndex),
+        $taxonCount,
+        IMPORT_MENU_TAXON_LIMIT,
+    ));
+
     io()->section('Step 2/3 — Fixture generation');
     $taxonFixture = build_taxon_fixture($taxonIndex, $projectSlug);
     $taxonImageFixture = build_taxon_image_fixture($taxonIndex, $projectSlug, find_first_image_prompt($products));

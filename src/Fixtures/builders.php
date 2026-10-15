@@ -79,6 +79,40 @@ function build_taxon_index(array $collections, string $projectSlug = ''): array
 }
 
 /**
+ * Keeps the taxons holding the most selected products, in their catalog order, so the shop menu stays readable.
+ * Products of a dropped taxon lose their assignment and fall back to the root taxon.
+ *
+ * @param array<int, array{code: string, name: string, slug: string, image: ?string}> $taxonIndex
+ * @param array<int, string>                                                         $taxonAssignments
+ *
+ * @return array{0: array<int, array{code: string, name: string, slug: string, image: ?string}>, 1: array<int, string>}
+ */
+function limit_menu_taxons(array $taxonIndex, array $taxonAssignments, int $limit = IMPORT_MENU_TAXON_LIMIT): array
+{
+    $productCounts = array_count_values($taxonAssignments);
+    $positions = [];
+
+    foreach ($taxonIndex as $position => $taxon) {
+        if (($productCounts[$taxon['code']] ?? 0) > 0) {
+            $positions[$taxon['code']] = $position;
+        }
+    }
+
+    uksort(
+        $positions,
+        static fn(int|string $a, int|string $b): int => [$productCounts[$b], $positions[$a]] <=> [$productCounts[$a], $positions[$b]],
+    );
+    $kept = array_flip(\array_slice(array_keys($positions), 0, $limit));
+    $dropped = array_diff_key($positions, $kept);
+
+    return [
+        array_values(array_filter($taxonIndex, static fn(array $taxon): bool => isset($kept[$taxon['code']]))),
+        // Codes outside the index (e.g. the "category" fallback) are left alone.
+        array_filter($taxonAssignments, static fn(string $code): bool => !isset($dropped[$code])),
+    ];
+}
+
+/**
  * @param array<int, array{code: string, name: string, slug: string, image: ?string}> $taxonIndex
  *
  * @return array<string, mixed>
