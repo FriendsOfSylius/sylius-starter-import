@@ -8,7 +8,6 @@ use App\Entity\Customer\Customer;
 use App\Entity\Order\Order;
 use App\Entity\Product\Product;
 use App\Entity\Taxonomy\Taxon;
-use App\Entity\User\AdminUser;
 use App\Entity\User\ShopUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Sylius\Component\Channel\Repository\ChannelRepositoryInterface;
@@ -24,6 +23,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[AsCommand(
     name: 'sylius:import:channel:reset',
@@ -31,6 +32,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class ResetImportChannelCommand extends Command
 {
+    /**
+     * Dispatched before the imported data is flushed away, so the app can remove what it attached to the
+     * imported shop. GenericEvent subject: the channel code; arguments: "prefix" and "keep_channel".
+     */
+    public const RESET_EVENT = 'import.channel_reset';
+
     /**
      * @param ChannelRepositoryInterface<ChannelInterface>                 $channelRepository
      * @param PaymentMethodRepositoryInterface<PaymentMethodInterface>     $paymentMethodRepository
@@ -41,6 +48,7 @@ final class ResetImportChannelCommand extends Command
         private readonly ChannelRepositoryInterface $channelRepository,
         private readonly PaymentMethodRepositoryInterface $paymentMethodRepository,
         private readonly ShippingMethodRepositoryInterface $shippingMethodRepository,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
         parent::__construct();
     }
@@ -80,7 +88,7 @@ final class ResetImportChannelCommand extends Command
         if ($input->getOption('keep-channel')) {
             $io->comment(\sprintf('Removing catalog prefixed %s from channel %s (channel kept).', $prefix, $code));
 
-            $this->removeImportAdminUsers($code, $prefix);
+            $this->dispatchResetEvent($code, $prefix, true);
             $this->removeImportShopUser($shopEmail);
             $this->removeOrdersWithProductPrefix($prefix);
             $this->removeProductsByPrefix($prefix);
@@ -102,7 +110,7 @@ final class ResetImportChannelCommand extends Command
                 $prefix,
             ));
 
-            $this->removeImportAdminUsers($code);
+            $this->dispatchResetEvent($code, $prefix, false);
             $this->removeImportShopUser($shopEmail);
             $this->removeProductsByPrefix($prefix);
             $this->releaseMenuTaxons($prefix);
@@ -117,7 +125,7 @@ final class ResetImportChannelCommand extends Command
 
         $io->comment(\sprintf('Resetting channel %s (prefix %s).', $code, $prefix));
 
-        $this->removeImportAdminUsers($code);
+        $this->dispatchResetEvent($code, $prefix, false);
         $this->removeImportShopUser($shopEmail);
         $this->removeOrders($channel);
         $this->removeProducts($channel, $prefix);
@@ -146,27 +154,12 @@ final class ResetImportChannelCommand extends Command
         }
     }
 
-    private function removeImportAdminUsers(string $channelCode, ?string $prefix = null): void
+    private function dispatchResetEvent(string $channelCode, string $prefix, bool $keepChannel): void
     {
-        $queryBuilder = $this->entityManager->createQueryBuilder()
-            ->select('adminUser')
-            ->from(AdminUser::class, 'adminUser')
-            ->andWhere('adminUser.channelCode = :channelCode')
-            ->setParameter('channelCode', $channelCode)
-        ;
-
-        if (null !== $prefix) {
-            $queryBuilder
-                ->andWhere('adminUser.importCodePrefix = :prefix')
-                ->setParameter('prefix', $prefix)
-            ;
-        }
-
-        $adminUsers = $queryBuilder->getQuery()->getResult();
-
-        foreach ($adminUsers as $adminUser) {
-            $this->entityManager->remove($adminUser);
-        }
+        $this->eventDispatcher->dispatch(
+            new GenericEvent($channelCode, ['prefix' => $prefix, 'keep_channel' => $keepChannel]),
+            self::RESET_EVENT,
+        );
     }
 
     private function removeImportShopUser(string $shopEmail): void

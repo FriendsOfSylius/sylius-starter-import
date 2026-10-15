@@ -56,11 +56,11 @@ final class PersistProjectConfigTest extends TestCase
             'header' => true,
             'interstice' => false,
         ], $config['shop_images']);
-        static::assertSame(12, \strlen((string) $config['admin_password']));
+        static::assertArrayNotHasKey('admin_password', $config);
         static::assertSame(12, \strlen((string) $config['shop_password']));
     }
 
-    public function testPersistKeepsExistingPasswords(): void
+    public function testPersistKeepsExistingPasswordsAndExtensionData(): void
     {
         $media = $this->root . '/.castor/import/var/cocorico/media';
         static::assertTrue(mkdir($media, 0o775, true));

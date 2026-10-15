@@ -17,6 +17,9 @@ const IMPORT_COLLECTION_AI_THRESHOLD = 3;
 const IMPORT_LOCALE_PREFERENCE = ['fr', 'en', 'es', 'de', 'it', 'nl'];
 const IMPORT_IMAGE_MAX_DIMENSION = 2048;
 
+/** Sub-directory of a project's fixtures holding those contributed by import extensions. */
+const IMPORT_EXTENSION_FIXTURES_DIR = 'extensions';
+
 /** Channel created by the Sylius default fixtures, served on the app main domain. */
 const IMPORT_DEFAULT_CHANNEL_CODE = 'WEB_STORE';
 

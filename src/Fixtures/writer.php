@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Sylius\Starter\Import;
 
+use Sylius\Starter\Import\Extension\ImportExtensions;
+
 use function Castor\io;
 
 /**
@@ -70,17 +72,12 @@ function write_import_fixture_files(
     write_fixture_file($relativeDir . '/taxon_images.php', $taxonImageFixture);
     write_fixture_file($relativeDir . '/products.php', $productFixture);
     write_fixture_file($relativeDir . '/product_prices.php', $productPriceFixture);
-    if ($target['shared']) {
-        // The default channel already exists (app suite) and has its own admins.
-        write_fixture_file($relativeDir . '/channel.php', []);
-        write_fixture_file($relativeDir . '/admin_user.php', []);
-    } else {
-        write_fixture_file($relativeDir . '/channel.php', build_channel_fixture($projectSlug, $domain, $subdomain));
-        write_fixture_file($relativeDir . '/admin_user.php', build_admin_user_fixture($projectSlug));
-    }
+    // The default channel already exists (app suite).
+    write_fixture_file($relativeDir . '/channel.php', $target['shared'] ? [] : build_channel_fixture($projectSlug, $domain, $subdomain));
 
     write_fixture_file($relativeDir . '/channel_access.php', build_channel_access_fixture($projectSlug, $target['channel'], $target['shared']));
     write_fixture_file($relativeDir . '/shop_user.php', build_shop_user_fixture($projectSlug));
+    write_import_extension_fixture_files($projectSlug, $target);
     write_import_suite_loader($projectSlug);
 
     io()->info(\sprintf(
@@ -99,6 +96,34 @@ function write_import_fixture_files(
     ]);
 }
 
+/**
+ * Rewrites the fixtures contributed by import extensions, dropping those of extensions no longer registered.
+ *
+ * @param array{channel: string, subdomain: ?string, shared: bool} $target
+ */
+function write_import_extension_fixture_files(string $projectSlug, array $target): void
+{
+    foreach (import_extension_fixture_files($projectSlug) as $file) {
+        unlink($file);
+    }
+
+    foreach (ImportExtensions::all() as $extension) {
+        foreach ($extension->buildFixtures($projectSlug, $target) as $name => $config) {
+            write_fixture_file(\sprintf('%s/%s/%s.php', import_fixture_slug_dir($projectSlug), IMPORT_EXTENSION_FIXTURES_DIR, $name), $config);
+        }
+    }
+}
+
+/**
+ * @return list<string>
+ */
+function import_extension_fixture_files(string $projectSlug): array
+{
+    $files = glob(\sprintf('%s/config/sylius/fixtures/%s/%s/*.php', app_dir(), import_fixture_slug_dir($projectSlug), IMPORT_EXTENSION_FIXTURES_DIR));
+
+    return false === $files ? [] : $files;
+}
+
 function write_import_suite_loader(string $projectSlug): void
 {
     $relativeDir = import_fixture_slug_dir($projectSlug);
@@ -107,10 +132,13 @@ function write_import_suite_loader(string $projectSlug): void
         ['resource' => $relativeDir . '/taxon_images.php'],
         ['resource' => $relativeDir . '/channel.php'],
         ['resource' => $relativeDir . '/channel_access.php'],
-        ['resource' => $relativeDir . '/admin_user.php'],
         ['resource' => $relativeDir . '/shop_user.php'],
         ['resource' => $relativeDir . '/products.php'],
         ['resource' => $relativeDir . '/product_prices.php'],
+        ...array_map(
+            static fn(string $file): array => ['resource' => $relativeDir . '/' . IMPORT_EXTENSION_FIXTURES_DIR . '/' . basename($file)],
+            import_extension_fixture_files($projectSlug),
+        ),
     ], true);
 
     create_file(

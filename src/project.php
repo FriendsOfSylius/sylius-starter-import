@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sylius\Starter\Import;
 
+use Sylius\Starter\Import\Extension\ImportExtensions;
 use Symfony\Component\Yaml\Yaml;
 
 use function Castor\io;
@@ -133,42 +134,21 @@ function import_project_mode(string $slug): ?string
 }
 
 /**
+ * Keeps what earlier runs wrote once (shop password, shop target, data stored by import extensions…).
+ *
  * @param array<string, mixed>|null $existing
  *
  * @return array<string, mixed>
  */
-function merge_project_passwords(array $config, ?array $existing): array
+function merge_project_config(array $config, ?array $existing): array
 {
-    foreach (['admin_password', 'shop_password'] as $key) {
-        $previous = trim((string) ($existing[$key] ?? ''));
+    $config += $existing ?? [];
 
-        if ('' !== $previous) {
-            $config[$key] = $previous;
-
-            continue;
-        }
-
-        $config[$key] = generate_import_password();
-    }
-
-    // Not a password, but also written once (by fixtures:generate) and must survive rewrites.
-    if (!isset($config['shop']) && \is_array($existing['shop'] ?? null)) {
-        $config['shop'] = $existing['shop'];
+    if ('' === trim((string) ($config['shop_password'] ?? ''))) {
+        $config['shop_password'] = generate_import_password();
     }
 
     return $config;
-}
-
-function import_admin_user_password(string $slug): string
-{
-    $config = load_project_config($slug);
-    $password = trim((string) ($config['admin_password'] ?? ''));
-
-    if ('' === $password) {
-        throw new \RuntimeException(\sprintf('Missing admin_password in project.yaml for "%s".', $slug));
-    }
-
-    return $password;
 }
 
 function import_shop_user_password(string $slug): string
@@ -190,7 +170,7 @@ function persist_project_config(string $slug, array $metadata): void
 {
     $existing = load_project_config($slug);
 
-    write_project_config($slug, merge_project_passwords([
+    write_project_config($slug, merge_project_config([
         'slug' => $slug,
         'name' => trim((string) ($metadata['name'] ?? '')),
         'description' => trim((string) ($metadata['description'] ?? '')),
@@ -317,7 +297,7 @@ function update_project_config(string $slug, array $fields): void
         throw new \RuntimeException(\sprintf('Project "%s" not found.', $slug));
     }
 
-    write_project_config($slug, merge_project_passwords([
+    write_project_config($slug, merge_project_config([
         'slug' => $slug,
         'name' => trim((string) ($fields['name'] ?? $existing['name'] ?? '')),
         'description' => trim((string) ($fields['description'] ?? $existing['description'] ?? '')),
@@ -504,7 +484,6 @@ function select_import_host_slug(string $prompt): ?string
  *     channelCode: string,
  *     shopUrl: string,
  *     adminUrl: string,
- *     adminPassword: string|null,
  *     shopPassword: string|null,
  *     shopUserEmail: string,
  *     url: string|null,
@@ -530,7 +509,7 @@ function list_import_shops(): array
             $shopImages = shop_images_presence($slug);
         }
 
-        $shops[] = [
+        $shop = [
             'slug' => $slug,
             'name' => import_project_display_name($slug),
             'mode' => import_project_mode($slug),
@@ -542,7 +521,6 @@ function list_import_shops(): array
             'channelCode' => $target['channel'],
             'shopUrl' => 'https://' . $hostname,
             'adminUrl' => 'https://' . $hostname . '/admin',
-            'adminPassword' => isset($config['admin_password']) ? (string) $config['admin_password'] : null,
             'shopPassword' => isset($config['shop_password']) ? (string) $config['shop_password'] : null,
             'shopUserEmail' => import_shop_user_email($slug),
             'url' => isset($config['url']) ? (string) $config['url'] : null,
@@ -554,6 +532,12 @@ function list_import_shops(): array
                 'interstice' => (bool) ($shopImages['interstice'] ?? false),
             ],
         ];
+
+        foreach (ImportExtensions::all() as $extension) {
+            $shop += $extension->describeShop($slug, $config);
+        }
+
+        $shops[] = $shop;
     }
 
     return $shops;
@@ -589,7 +573,6 @@ function import_project_imported_at(string $slug): ?string
  *     channelCode: string,
  *     shopUrl: string,
  *     adminUrl: string,
- *     adminPassword: string|null,
  *     shopPassword: string|null,
  *     shopUserEmail: string,
  *     url: string|null,
@@ -631,7 +614,6 @@ function write_import_shop_list(array $shops, ?bool $tty = null): void
  *     channelCode: string,
  *     shopUrl: string,
  *     adminUrl: string,
- *     adminPassword: string|null,
  *     shopPassword: string|null,
  *     shopUserEmail: string,
  *     url: string|null,

@@ -8,10 +8,8 @@ use PHPUnit\Framework\TestCase;
 use Sylius\Starter\Core\App;
 use Sylius\Starter\Import\ImportContext;
 
-use function Sylius\Starter\Import\build_admin_user_fixture;
 use function Sylius\Starter\Import\build_shop_user_fixture;
 use function Sylius\Starter\Import\generate_import_password;
-use function Sylius\Starter\Import\import_admin_user_password;
 use function Sylius\Starter\Import\write_project_config;
 
 final class ImportProjectPasswordTest extends TestCase
@@ -42,23 +40,9 @@ final class ImportProjectPasswordTest extends TestCase
         static::assertMatchesRegularExpression('/^[A-Za-z0-9]{12}$/', $password);
     }
 
-    public function testBuildAdminUserFixtureUsesSlugAndYamlPassword(): void
-    {
-        $this->bootstrapProject('cocorico', 'admin-pass-1234', 'shop-pass-5678');
-
-        $fixture = build_admin_user_fixture('cocorico');
-
-        $entry = $fixture['sylius_fixtures']['suites']['import']['fixtures']['import_admin_user']['options']['custom'][0];
-
-        static::assertSame('COCORICO', $entry['channel']);
-        static::assertSame('cocorico', $entry['username']);
-        static::assertSame('admin-pass-1234', $entry['password']);
-        static::assertSame('cocorico@import.local', $entry['email']);
-    }
-
     public function testBuildShopUserFixtureUsesYamlPassword(): void
     {
-        $this->bootstrapProject('cocorico', 'admin-pass-1234', 'shop-pass-5678');
+        $this->bootstrapProject('cocorico', 'shop-pass-5678');
 
         $fixture = build_shop_user_fixture('cocorico');
         $entry = $fixture['sylius_fixtures']['suites']['import']['fixtures']['import_shop_user']['options']['custom'][0];
@@ -67,14 +51,7 @@ final class ImportProjectPasswordTest extends TestCase
         static::assertSame('shop-pass-5678', $entry['password']);
     }
 
-    public function testImportAdminUserPasswordReadsFromProjectYaml(): void
-    {
-        $this->bootstrapProject('doudou', 'secret-admin!', 'secret-shop!');
-
-        static::assertSame('secret-admin!', import_admin_user_password('doudou'));
-    }
-
-    private function bootstrapProject(string $slug, string $adminPassword, string $shopPassword): void
+    private function bootstrapProject(string $slug, string $shopPassword): void
     {
         $hostDir = $this->root . '/.castor/import/var/' . $slug;
         $media = $hostDir . '/media';
@@ -88,7 +65,6 @@ final class ImportProjectPasswordTest extends TestCase
             'description' => 'Demo shop',
             'url' => 'https://example.com',
             'mode' => 'existing',
-            'admin_password' => $adminPassword,
             'shop_password' => $shopPassword,
             'shop_images' => ['logo' => true, 'header' => false, 'interstice' => false],
         ]);

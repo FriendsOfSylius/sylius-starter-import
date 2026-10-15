@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Sylius\Starter\Import;
 
 use Sylius\Starter\Core\App;
-use Sylius\Starter\Core\PhpFile;
 use Sylius\Starter\Core\Storefront\Hero;
 use Sylius\Starter\Core\Util\Database;
+use Sylius\Starter\Import\Extension\ImportExtensions;
 
 use function Castor\fs;
 use function Castor\io;
@@ -37,14 +37,15 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
 
     if (is_import_scaffold_deployed($app)) {
         upgrade_import_storefront($app);
-        setup_import_admin_user_entity($app);
         sync_import_owned_files($app);
+        scaffold_import_extensions($app);
 
         return;
     }
 
     ImportContext::setCurrent(new ImportContext($app, $serviceName));
     deploy_import_scaffold();
+    scaffold_import_extensions($app);
     maybe_refresh_composer_autoload();
     Database::migrate($app);
 }
@@ -78,15 +79,12 @@ function deploy_import_scaffold(): void
 
     fs()->mirror($templateDir, $targetDir, options: ['override' => false]);
 
-    setup_import_admin_user_entity(ImportContext::current()->app());
-
     Hero::install(ImportContext::current()->app());
 
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/app.php');
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/import.php');
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/twig_hooks/**/**');
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/shop_images.yaml');
-    add_yaml_import('config/packages/_sylius.yaml', '../sylius/import_channel_admin.yaml');
     add_yaml_import_with_options(
         'config/packages/_sylius.yaml',
         '../import/shop_images.php',
@@ -124,23 +122,11 @@ function sync_import_owned_files(App $app): void
     }
 }
 
-/**
- * sylius-standard always ships src/Entity/User/AdminUser.php (and other packages
- * patch it), so the non-overriding mirror never writes ours. Wire the
- * import channel scoping onto the existing entity instead. Idempotent.
- */
-function setup_import_admin_user_entity(App $app): void
+function scaffold_import_extensions(App $app): void
 {
-    $path = $app->directory() . '/src/Entity/User/AdminUser.php';
-
-    if (!is_file($path)) {
-        return;
+    foreach (ImportExtensions::all() as $extension) {
+        $extension->scaffold($app);
     }
-
-    (new PhpFile($path))
-        ->addInterface('App\\Entity\\User\\ImportChannelAdminAwareInterface')
-        ->addTrait('App\\Entity\\User\\ImportChannelAdminAwareTrait')
-        ->save();
 }
 
 /**

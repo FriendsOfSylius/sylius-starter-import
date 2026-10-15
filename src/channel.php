@@ -163,11 +163,6 @@ function generate_import_password(): string
     return $password;
 }
 
-function import_admin_user_email(string $slug): string
-{
-    return $slug . '@import.local';
-}
-
 function import_shop_user_email(string $slug): string
 {
     return $slug . '@shop.local';

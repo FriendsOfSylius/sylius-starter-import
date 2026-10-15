@@ -210,38 +210,6 @@ function build_channel_access_fixture(string $projectSlug, ?string $channelCode 
 /**
  * @return array<string, mixed>
  */
-function build_admin_user_fixture(string $projectSlug): array
-{
-    return [
-        'sylius_fixtures' => [
-            'suites' => [
-                'import' => [
-                    'fixtures' => [
-                        'import_admin_user' => [
-                            'name' => 'import_admin_user',
-                            'options' => [
-                                'custom' => [
-                                    [
-                                        'channel' => channel_code_from_slug($projectSlug),
-                                        'username' => $projectSlug,
-                                        'password' => import_admin_user_password($projectSlug),
-                                        'first_name' => import_project_display_name($projectSlug),
-                                        'email' => import_admin_user_email($projectSlug),
-                                        'import_code_prefix' => import_code_prefix($projectSlug),
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ];
-}
-
-/**
- * @return array<string, mixed>
- */
 function build_shop_user_fixture(string $projectSlug): array
 {
     return [
