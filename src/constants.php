@@ -16,6 +16,10 @@ const IMPORT_PLATFORM_SHOPIFY_THRESHOLD = 3;
 const IMPORT_COLLECTION_AI_THRESHOLD = 3;
 // Imported taxons are all menu children: beyond this, theme menus wrap over many lines.
 const IMPORT_MENU_TAXON_LIMIT = 12;
+// Above this many collections holding products, AI groups them into a two-level menu (e.g. Men > T-shirts).
+const IMPORT_TAXON_GROUPING_THRESHOLD = 8;
+const IMPORT_TAXON_GROUP_LIMIT = 6;
+const IMPORT_TAXON_GROUP_CHILD_LIMIT = 8;
 const IMPORT_LOCALE_PREFERENCE = ['fr', 'en', 'es', 'de', 'it', 'nl'];
 const IMPORT_IMAGE_MAX_DIMENSION = 2048;
 

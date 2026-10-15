@@ -75,13 +75,8 @@ function generate_import_fixtures(?string $projectSlug, int $limit, ?string $dom
     [$taxonAssignments, $priceAssignments, $promoProductIds, $selectedProducts] = $selection;
 
     $taxonCount = \count($taxonIndex);
-    [$taxonIndex, $taxonAssignments] = limit_menu_taxons($taxonIndex, $taxonAssignments);
-    import_log(\sprintf(
-        'Menu taxons: %d/%d kept (those holding selected products, %d at most).',
-        \count($taxonIndex),
-        $taxonCount,
-        IMPORT_MENU_TAXON_LIMIT,
-    ));
+    [$taxonIndex, $taxonAssignments] = organize_menu_taxons($taxonIndex, $taxonAssignments, $selectedProducts, $projectSlug);
+    import_log(\sprintf('Menu taxons: %d taxon(s) from %d collection(s).', \count($taxonIndex), $taxonCount));
 
     io()->section('Step 2/3 — Fixture generation');
     $taxonFixture = build_taxon_fixture($taxonIndex, $projectSlug);
@@ -92,6 +87,7 @@ function generate_import_fixtures(?string $projectSlug, int $limit, ?string $dom
         $taxonAssignments,
         $priceAssignments,
         $promoProductIds,
+        array_column($taxonIndex, 'parent', 'code'),
     );
 
     io()->section('Step 3/3 — Write fixture files');

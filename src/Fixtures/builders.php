@@ -113,33 +113,15 @@ function limit_menu_taxons(array $taxonIndex, array $taxonAssignments, int $limi
 }
 
 /**
- * @param array<int, array{code: string, name: string, slug: string, image: ?string}> $taxonIndex
+ * @param array<int, array{code: string, name: string, slug: string, image: ?string, parent?: string}> $taxonIndex
  *
  * @return array<string, mixed>
  */
 function build_taxon_fixture(array $taxonIndex, string $projectSlug = ''): array
 {
-    $children = [];
     $rootCode = '' !== $projectSlug ? shop_menu_taxon_code($projectSlug) : 'category';
     $rootSlug = str_replace('_', '-', $rootCode);
-
-    foreach ($taxonIndex as $taxon) {
-        $children[] = [
-            'code' => $taxon['code'],
-            'name' => $taxon['name'],
-            'slug' => $taxon['slug'],
-            'translations' => [
-                'en_US' => [
-                    'name' => $taxon['name'],
-                    'slug' => $taxon['slug'],
-                ],
-                'fr_FR' => [
-                    'name' => $taxon['name'],
-                    'slug' => $taxon['slug'],
-                ],
-            ],
-        ];
-    }
+    $children = build_taxon_fixture_children($taxonIndex, null);
 
     return [
         'sylius_fixtures' => [
@@ -164,6 +146,48 @@ function build_taxon_fixture(array $taxonIndex, string $projectSlug = ''): array
             ],
         ],
     ];
+}
+
+/**
+ * @param array<int, array{code: string, name: string, slug: string, image: ?string, parent?: string}> $taxonIndex
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function build_taxon_fixture_children(array $taxonIndex, ?string $parentCode): array
+{
+    $children = [];
+
+    foreach ($taxonIndex as $taxon) {
+        if (($taxon['parent'] ?? null) !== $parentCode) {
+            continue;
+        }
+
+        $child = [
+            'code' => $taxon['code'],
+            'name' => $taxon['name'],
+            'slug' => $taxon['slug'],
+            'translations' => [
+                'en_US' => [
+                    'name' => $taxon['name'],
+                    'slug' => $taxon['slug'],
+                ],
+                'fr_FR' => [
+                    'name' => $taxon['name'],
+                    'slug' => $taxon['slug'],
+                ],
+            ],
+        ];
+
+        $grandChildren = build_taxon_fixture_children($taxonIndex, $taxon['code']);
+
+        if ([] !== $grandChildren) {
+            $child['children'] = $grandChildren;
+        }
+
+        $children[] = $child;
+    }
+
+    return $children;
 }
 
 /**
@@ -344,6 +368,7 @@ function build_taxon_image_fixture(array $taxonIndex, string $projectSlug, ?stri
  * @param array<int, string>               $taxonAssignments
  * @param array<int, int>                  $priceAssignments
  * @param int[]                              $promoProductIds
+ * @param array<string, string>            $taxonParents     taxon code => parent taxon code
  *
  * @return array{0: array<string, mixed>, 1: array<string, mixed>}
  */
@@ -353,6 +378,7 @@ function build_product_fixtures(
     array $taxonAssignments,
     array $priceAssignments,
     array $promoProductIds = [],
+    array $taxonParents = [],
 ): array {
     $custom = [];
     $priceCustom = [];
@@ -398,7 +424,8 @@ function build_product_fixtures(
             'short_description' => $description,
             'description' => $description,
             'main_taxon' => $taxonCode,
-            'taxons' => array_values(array_unique([$taxonCode, $rootTaxon])),
+            // Parent taxons list the product too, so a group page (e.g. "Men") shows its children's products.
+            'taxons' => array_values(array_unique([$taxonCode, ...taxon_ancestor_codes($taxonCode, $taxonParents), $rootTaxon])),
             'channels' => [$channelCode],
             'tax_category' => 'other',
         ];
@@ -454,6 +481,23 @@ function build_product_fixtures(
     }
 
     return wrap_product_fixture_config($custom, $priceCustom);
+}
+
+/**
+ * @param array<string, string> $taxonParents
+ *
+ * @return string[]
+ */
+function taxon_ancestor_codes(string $taxonCode, array $taxonParents): array
+{
+    $ancestors = [];
+
+    while (isset($taxonParents[$taxonCode]) && !\in_array($taxonParents[$taxonCode], $ancestors, true)) {
+        $taxonCode = $taxonParents[$taxonCode];
+        $ancestors[] = $taxonCode;
+    }
+
+    return $ancestors;
 }
 
 /**
