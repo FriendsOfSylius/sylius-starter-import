@@ -15,7 +15,15 @@ function import_log(string $message): void
     }
 }
 
+/**
+ * @deprecated use ensure_app_ready()
+ */
 function ensure_docker_ready(): void
+{
+    ensure_app_ready();
+}
+
+function ensure_app_ready(): void
 {
     static $loaded = false;
 

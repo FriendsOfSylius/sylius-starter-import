@@ -16,7 +16,7 @@ function load_import_fixture_suite(string $projectSlug): void
     }
 
     write_import_suite_loader($projectSlug);
-    ensure_docker_ready();
+    ensure_app_ready();
 
     $target = import_shop_target($projectSlug);
 
@@ -29,7 +29,21 @@ function load_import_fixture_suite(string $projectSlug): void
         import_code_prefix($projectSlug),
     ));
 
+    // The suite loader and shop images config were just rewritten: rebuild the
+    // container so neither the CLI nor the storefront uses a stale suite (APP_ENV=prod).
+    clear_sylius_cache();
     import_docker_compose_run(import_shop_reset_cli($projectSlug));
     import_docker_compose_run('php bin/console sylius:fixtures:load import -n');
     import_log('Fixture suite loaded successfully.');
+}
+
+function sylius_cache_clear_cli(): string
+{
+    return 'php bin/console cache:clear -n';
+}
+
+function clear_sylius_cache(): void
+{
+    import_log('Clearing the Sylius cache...');
+    import_docker_compose_run(sylius_cache_clear_cli());
 }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Sylius\Starter\Import;
 
-use function Castor\Docker\docker_compose_run;
+use Sylius\Starter\Core\Util\Runner;
+use Symfony\Component\Filesystem\Path;
 
 function last_generated_import_path(): string
 {
@@ -180,12 +181,40 @@ function load_collections_yaml(string $host): array
     return load_yaml_file(castor_var_path($host, 'collections'));
 }
 
+/**
+ * Image path written into generated fixtures. It is resolved by Symfony when the
+ * fixture suite is compiled, relative to the Sylius kernel, so it is valid wherever
+ * the fixtures are loaded (Docker builder, castor-api container or bare host).
+ */
 function import_media_fixture_path(string $host, string $filename): string
 {
-    return IMPORT_VAR_CONTAINER_DIR . '/' . $host . '/media/' . $filename;
+    return '%kernel.project_dir%/' . import_var_dir_from_app() . '/' . $host . '/media/' . $filename;
 }
 
+/**
+ * The import var directory relative to the Sylius application directory
+ * (".castor/import/var" sits at the Castor project root, "app/" next to it).
+ */
+function import_var_dir_from_app(?string $appDirectory = null, ?string $projectRoot = null): string
+{
+    $appDirectory ??= ImportContext::current()->appDir();
+
+    if (Path::isAbsolute($appDirectory)) {
+        $projectRoot ??= ImportContext::current()->projectRoot();
+
+        return Path::makeRelative(Path::join($projectRoot, IMPORT_VAR_HOST_DIR), $appDirectory);
+    }
+
+    // Both relative to the Castor project root.
+    return Path::makeRelative(IMPORT_VAR_HOST_DIR, $appDirectory);
+}
+
+/**
+ * Runs a command against the Sylius application (Docker builder or local, see Runner).
+ */
 function import_docker_compose_run(string $command): void
 {
-    docker_compose_run($command, ImportContext::current()->serviceName() . '-builder');
+    $context = ImportContext::current();
+
+    Runner::run($context->app(), $command);
 }

@@ -8,6 +8,7 @@ use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 use Castor\Api\Attribute\AsApi;
+use Castor\Exception\ProblemException;
 use Sylius\Starter\Core\App;
 use Sylius\Starter\Import\ImportContext;
 use Symfony\Component\Console\Question\Question;
@@ -110,7 +111,8 @@ final class ImportTasks
                     try {
                         delete_import_shop($projectSlug);
                     } catch (\Throwable $exception) {
-                        io()->error($exception->getMessage());
+                        // Non-zero exit code: castor-api reports the run as failed
+                        throw new ProblemException($exception->getMessage(), previous: $exception);
                     }
                 });
             },
@@ -216,7 +218,7 @@ final class ImportTasks
     private function fixturesLoadTask(): iterable
     {
         yield [
-            'task' => new AsTask('load', 'sylius:import:fixtures', 'Load generated import fixtures into Sylius via Docker'),
+            'task' => new AsTask('load', 'sylius:import:fixtures', 'Load generated import fixtures into Sylius'),
             /** @phpstan-ignore-next-line  */
             'function' => #[AsApi(async: true)] function (
                 #[AsOption]
@@ -248,9 +250,9 @@ final class ImportTasks
                         io()->error(
                             'Fixture load failed. If the issue persists, reset with "castor app:db:fixtures app" then re-run sylius:import:fixtures:load.',
                         );
-                        io()->writeln($exception->getMessage());
 
-                        return;
+                        // Non-zero exit code: castor-api reports the run as failed
+                        throw new ProblemException($exception->getMessage(), previous: $exception);
                     }
 
                     io()->success(\sprintf('Import fixtures loaded for %s.', $projectSlug));

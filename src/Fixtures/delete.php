@@ -26,12 +26,15 @@ function delete_import_shop(string $projectSlug): void
     import_log('Removing import files...');
     purge_import_shop_artifacts($projectSlug);
 
+    // Suite loader and shop images config changed.
+    clear_sylius_cache();
+
     io()->success(\sprintf('Import shop %s deleted.', $projectSlug));
 }
 
 function reset_import_shop_channel(string $projectSlug): void
 {
-    ensure_docker_ready();
+    ensure_app_ready();
 
     try {
         import_docker_compose_run(import_shop_reset_cli($projectSlug));

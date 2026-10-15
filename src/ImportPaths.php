@@ -11,7 +11,4 @@ final class ImportPaths
 {
     /** Host path of import payloads, relative to the Castor project root. */
     public const string VAR_HOST_DIR = '.castor/import/var';
-
-    /** Where Sylius containers see that directory (see SyliusService::updateCompose). */
-    public const string VAR_CONTAINER_DIR = '/import-var';
 }

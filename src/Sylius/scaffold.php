@@ -164,7 +164,7 @@ function upgrade_import_storefront(App $app): void
 function maybe_refresh_composer_autoload(): void
 {
     try {
-        ensure_docker_ready();
+        ensure_app_ready();
         import_docker_compose_run('composer dump-autoload');
     } catch (\Throwable) {
         import_log('composer dump-autoload skipped (stack may not be running yet).');

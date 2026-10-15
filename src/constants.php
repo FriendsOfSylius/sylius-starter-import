@@ -27,6 +27,3 @@ const IMPORT_DEFAULT_CHANNEL_CODE = 'WEB_STORE';
 
 /** Host path of import payloads, relative to the Castor project root. */
 const IMPORT_VAR_HOST_DIR = ImportPaths::VAR_HOST_DIR;
-
-/** Where Sylius containers see that directory (see SyliusService::updateCompose). */
-const IMPORT_VAR_CONTAINER_DIR = ImportPaths::VAR_CONTAINER_DIR;
