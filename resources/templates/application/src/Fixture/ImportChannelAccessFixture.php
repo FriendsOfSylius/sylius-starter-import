@@ -84,10 +84,34 @@ final class ImportChannelAccessFixture extends AbstractFixture
                 if (!$method->hasChannel($channel)) {
                     $method->addChannel($channel);
                 }
+
+                $this->copyChannelCalculatorConfiguration($method, $channelCode);
             }
         }
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * Per-channel calculators (flat_rate, per_unit_rate) are keyed by channel code: reuse the amount
+     * of an existing channel, otherwise the cart fails with "no amount defined for shipping method".
+     */
+    private function copyChannelCalculatorConfiguration(ShippingMethodInterface $method, string $channelCode): void
+    {
+        $configuration = $method->getConfiguration();
+
+        if (isset($configuration[$channelCode])) {
+            return;
+        }
+
+        foreach ($configuration as $channelConfiguration) {
+            if (\is_array($channelConfiguration) && \array_key_exists('amount', $channelConfiguration)) {
+                $configuration[$channelCode] = $channelConfiguration;
+                $method->setConfiguration($configuration);
+
+                return;
+            }
+        }
     }
 
     protected function configureOptionsNode(ArrayNodeDefinition $optionsNode): void
