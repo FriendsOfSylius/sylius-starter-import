@@ -12,7 +12,7 @@ castor composer require sylius-starter/import
 
 Or install every Sylius Starter package at once with `sylius-starter/sylius-starter`.
 
-Read the [documentation](https://github.com/sylius-starter/sylius-starter#readme) for usage.
+Read the [documentation](https://github.com/sylius-starter/sylius-starter/blob/main/docs/import/index.md) for usage.
 
 ## Contributing
 
