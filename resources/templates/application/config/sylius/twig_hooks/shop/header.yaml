@@ -1,9 +1,7 @@
+# The shop logo is rendered through the core brand slot (storefront_brand()),
+# import only feeds it with data, see src/Import/Storefront/ImportBrandContributor.php.
 sylius_twig_hooks:
     hooks:
-        'sylius_shop.base.header.content.logo':
-            content:
-                template: 'shop/shared/layout/header/logo.html.twig'
-
         'sylius_shop.base.header.navbar':
             menu:
                 enabled: false
