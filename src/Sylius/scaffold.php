@@ -197,6 +197,13 @@ function upgrade_import_brand(App $app): void
         }
     }
 
+    // The "logo" placeholder import used to render in the checkout and error pages.
+    $legacyLogo = $app->directory() . '/templates/bundles/SyliusShopBundle/shared/logo.html.twig';
+
+    if (is_file($legacyLogo) && '<span class="fw-bold text-uppercase">logo</span>' === trim((string) file_get_contents($legacyLogo))) {
+        fs()->remove($legacyLogo);
+    }
+
     import_log('Import storefront upgraded to the shared brand slot.');
 }
 
