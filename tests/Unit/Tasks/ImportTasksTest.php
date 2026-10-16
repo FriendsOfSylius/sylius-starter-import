@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit\Tasks;
+namespace SyliusStarter\Import\Tests\Unit\Tasks;
 
 use Castor\Attribute\AsTask;
 use PHPUnit\Framework\TestCase;
-use Sylius\Starter\Import\Tasks\ImportTasks;
+use SyliusStarter\Import\Tasks\ImportTasks;
 
 final class ImportTasksTest extends TestCase
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Sylius\Starter\Import\Tests\CastorContainerTrait;
+use SyliusStarter\Import\Tests\CastorContainerTrait;
 
-use function Sylius\Starter\Import\build_product_fixtures;
+use function SyliusStarter\Import\build_product_fixtures;
 
 final class ProductFixturesBuilderTest extends TestCase
 {

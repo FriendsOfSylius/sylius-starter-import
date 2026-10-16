@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Sylius\Starter\Core\App;
-use Sylius\Starter\Import\ImportContext;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 
-use function Sylius\Starter\Import\import_list_shop_hostname;
-use function Sylius\Starter\Import\resolve_import_shop_subdomain;
-use function Sylius\Starter\Import\shop_hostname;
+use function SyliusStarter\Import\import_list_shop_hostname;
+use function SyliusStarter\Import\resolve_import_shop_subdomain;
+use function SyliusStarter\Import\shop_hostname;
 
 final class ImportShopSubdomainTest extends TestCase
 {

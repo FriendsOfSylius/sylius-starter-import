@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Extension;
+namespace SyliusStarter\Import\Extension;
 
-use Sylius\Starter\Core\App;
+use SyliusStarter\Core\App;
 
 /**
  * Lets a project hook into the shop import (castor sylius:import:*) without the starter shipping its data:

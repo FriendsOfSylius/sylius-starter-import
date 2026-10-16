@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tasks;
+namespace SyliusStarter\Import\Tasks;
 
 use Castor\Attribute\AsArgument;
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 use Castor\Api\Attribute\AsApi;
 use Castor\Exception\ProblemException;
-use Sylius\Starter\Core\App;
-use Sylius\Starter\Import\ImportContext;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 use Symfony\Component\Console\Question\Question;
 
 use function Castor\io;
-use function Sylius\Starter\Import\build_ai_import_data;
-use function Sylius\Starter\Import\delete_import_shop;
-use function Sylius\Starter\Import\generate_import_fixtures;
-use function Sylius\Starter\Import\import_log;
-use function Sylius\Starter\Import\list_import_shops;
-use function Sylius\Starter\Import\load_import_fixture_suite;
-use function Sylius\Starter\Import\resolve_cli_project_slug;
-use function Sylius\Starter\Import\resolve_import_project;
-use function Sylius\Starter\Import\resolve_import_shop_subdomain;
-use function Sylius\Starter\Import\write_import_shop_list;
+use function SyliusStarter\Import\build_ai_import_data;
+use function SyliusStarter\Import\delete_import_shop;
+use function SyliusStarter\Import\generate_import_fixtures;
+use function SyliusStarter\Import\import_log;
+use function SyliusStarter\Import\list_import_shops;
+use function SyliusStarter\Import\load_import_fixture_suite;
+use function SyliusStarter\Import\resolve_cli_project_slug;
+use function SyliusStarter\Import\resolve_import_project;
+use function SyliusStarter\Import\resolve_import_shop_subdomain;
+use function SyliusStarter\Import\write_import_shop_list;
 
 final class ImportTasks
 {

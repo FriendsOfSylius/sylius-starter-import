@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Sylius\Starter\Core\App;
-use Sylius\Starter\Import\ImportContext;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
 
-use function Sylius\Starter\Import\ensure_import_scaffold;
-use function Sylius\Starter\Import\import_scaffold_marker_path;
-use function Sylius\Starter\Import\is_import_scaffold_deployed;
+use function SyliusStarter\Import\ensure_import_scaffold;
+use function SyliusStarter\Import\import_scaffold_marker_path;
+use function SyliusStarter\Import\is_import_scaffold_deployed;
 
 final class ImportScaffoldTest extends TestCase
 {

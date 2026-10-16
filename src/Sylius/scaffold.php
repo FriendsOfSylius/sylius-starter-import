@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import;
+namespace SyliusStarter\Import;
 
-use Sylius\Starter\Core\App;
-use Sylius\Starter\Core\Storefront\Brand;
-use Sylius\Starter\Core\Storefront\Hero;
-use Sylius\Starter\Core\Util\Database;
-use Sylius\Starter\Import\Extension\ImportExtensions;
+use SyliusStarter\Core\App;
+use SyliusStarter\Core\Storefront\Brand;
+use SyliusStarter\Core\Storefront\Hero;
+use SyliusStarter\Core\Util\Database;
+use SyliusStarter\Import\Extension\ImportExtensions;
 
 use function Castor\fs;
 use function Castor\io;

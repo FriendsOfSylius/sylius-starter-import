@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function Sylius\Starter\Import\import_failure_is_missing_sylius_schema;
+use function SyliusStarter\Import\import_failure_is_missing_sylius_schema;
 
 final class ImportDeleteSchemaTest extends TestCase
 {

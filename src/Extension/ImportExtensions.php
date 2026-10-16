@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Extension;
+namespace SyliusStarter\Import\Extension;
 
 final class ImportExtensions
 {

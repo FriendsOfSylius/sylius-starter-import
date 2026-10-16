@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import;
+namespace SyliusStarter\Import;
 
-use Sylius\Starter\Import\Dto\CollectionEntry;
-use Sylius\Starter\Import\Dto\CollectionExtraction;
-use Sylius\Starter\Import\Dto\ProductSelectionEntry;
-use Sylius\Starter\Import\Dto\ProductSelectionExtraction;
-use Sylius\Starter\Import\Dto\ProductTaxonAssignmentEntry;
-use Sylius\Starter\Import\Dto\ProductTaxonAssignmentExtraction;
+use SyliusStarter\Import\Dto\CollectionEntry;
+use SyliusStarter\Import\Dto\CollectionExtraction;
+use SyliusStarter\Import\Dto\ProductSelectionEntry;
+use SyliusStarter\Import\Dto\ProductSelectionExtraction;
+use SyliusStarter\Import\Dto\ProductTaxonAssignmentEntry;
+use SyliusStarter\Import\Dto\ProductTaxonAssignmentExtraction;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\StructuredOutput\ResponseFormatFactory;

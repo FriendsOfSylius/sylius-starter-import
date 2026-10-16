@@ -1,5 +1,5 @@
 {
-    "name": "sylius/starter-import",
+    "name": "sylius-starter/import",
     "description": "Castor tasks to import an existing shop catalog into Sylius, with optional AI enrichment",
     "type": "library",
     "license": "MIT",
@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": ">=8.3",
-        "sylius/starter-core": "self.version",
+        "sylius-starter/core": "self.version",
         "symfony/ai-ollama-platform": "^0.12.0",
         "symfony/ai-open-router-platform": "^0.12.0",
         "symfony/ai-platform": "^0.12.0",
@@ -30,7 +30,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Sylius\\Starter\\Import\\": "src/"
+            "SyliusStarter\\Import\\": "src/"
         },
         "files": [
             "src/constants.php",
@@ -42,7 +42,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Sylius\\Starter\\Import\\Tests\\": "tests/"
+            "SyliusStarter\\Import\\Tests\\": "tests/"
         }
     },
     "extra": {

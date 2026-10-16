@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import;
+namespace SyliusStarter\Import;
 
-use Sylius\Starter\Core\App;
-use Sylius\Starter\Core\Util\Filesystem;
-use Sylius\Starter\Core\Util\Yaml;
+use SyliusStarter\Core\App;
+use SyliusStarter\Core\Util\Filesystem;
+use SyliusStarter\Core\Util\Yaml;
 
 use function Castor\finder;
 use function Castor\variable;

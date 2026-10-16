@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-use function Sylius\Starter\Import\limit_menu_taxons;
+use function SyliusStarter\Import\limit_menu_taxons;
 
 final class MenuTaxonLimitTest extends TestCase
 {

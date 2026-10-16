@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import;
+namespace SyliusStarter\Import;
 
-use Sylius\Starter\Core\Util\Runner;
+use SyliusStarter\Core\Util\Runner;
 use Symfony\Component\Filesystem\Path;
 
 function last_generated_import_path(): string

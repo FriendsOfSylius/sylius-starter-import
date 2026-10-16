@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Dto;
+namespace SyliusStarter\Import\Dto;
 
 final class ProductTaxonAssignmentEntry
 {

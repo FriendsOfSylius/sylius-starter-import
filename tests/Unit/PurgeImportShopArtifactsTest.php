@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Starter\Import\Tests\Unit;
+namespace SyliusStarter\Import\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Sylius\Starter\Core\App;
-use Sylius\Starter\Import\ImportContext;
-use Sylius\Starter\Import\Tests\CastorContainerTrait;
+use SyliusStarter\Core\App;
+use SyliusStarter\Import\ImportContext;
+use SyliusStarter\Import\Tests\CastorContainerTrait;
 
-use function Sylius\Starter\Import\purge_import_shop_artifacts;
-use function Sylius\Starter\Import\write_last_generated_import;
+use function SyliusStarter\Import\purge_import_shop_artifacts;
+use function SyliusStarter\Import\write_last_generated_import;
 
 final class PurgeImportShopArtifactsTest extends TestCase
 {
