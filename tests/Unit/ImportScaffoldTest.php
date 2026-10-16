@@ -87,12 +87,66 @@ final class ImportScaffoldTest extends TestCase
         static::assertFileDoesNotExist($this->root . '/src/Fixture/ImportChannelAccessFixture.php');
     }
 
+    public function testEnsureImportScaffoldRemovesGeneratedHeaderOverrides(): void
+    {
+        $app = new App('app', $this->root);
+        $header = $this->root . '/config/sylius/twig_hooks/shop/header.yaml';
+        $this->deployMarker($app);
+        static::assertTrue(mkdir(\dirname($header), 0o775, true));
+        static::assertNotFalse(file_put_contents($header, <<<'YAML'
+            # The shop logo is rendered through the core brand slot (storefront_brand()).
+            sylius_twig_hooks:
+                hooks:
+                    'sylius_shop.base.header.navbar':
+                        menu:
+                            enabled: false
+
+                    'sylius_shop.base.header.content':
+                        taxon_hamburger:
+                            enabled: false
+            YAML));
+
+        ensure_import_scaffold($app, 'app');
+
+        static::assertFileDoesNotExist($header);
+    }
+
+    public function testEnsureImportScaffoldKeepsCustomizedHeaderOverrides(): void
+    {
+        $app = new App('app', $this->root);
+        $header = $this->root . '/config/sylius/twig_hooks/shop/header.yaml';
+        $customized = <<<'YAML'
+            sylius_twig_hooks:
+                hooks:
+                    'sylius_shop.base.header.content':
+                        taxon_hamburger:
+                            enabled: false
+                        security:
+                            enabled: false
+            YAML;
+        $this->deployMarker($app);
+        static::assertTrue(mkdir(\dirname($header), 0o775, true));
+        static::assertNotFalse(file_put_contents($header, $customized));
+
+        ensure_import_scaffold($app, 'app');
+
+        static::assertStringEqualsFile($header, $customized);
+    }
+
     public function testImportScaffoldTemplatesIncludeMarkerFile(): void
     {
         $templateDir = \dirname(__DIR__, 2) . '/resources/templates/application';
 
         static::assertFileExists($templateDir . '/config/sylius/fixtures/app.php');
         static::assertFileExists($templateDir . '/src/Command/ResetImportChannelCommand.php');
+    }
+
+    private function deployMarker(App $app): void
+    {
+        $marker = import_scaffold_marker_path($app);
+
+        static::assertTrue(mkdir(\dirname($marker), 0o775, true));
+        static::assertNotFalse(file_put_contents($marker, "<?php\n\nreturn [];\n"));
     }
 
     private function removeDirectory(string $directory): void

@@ -9,6 +9,8 @@ use SyliusStarter\Core\Storefront\Brand;
 use SyliusStarter\Core\Storefront\Hero;
 use SyliusStarter\Core\Util\Database;
 use SyliusStarter\Import\Extension\ImportExtensions;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 use function Castor\fs;
 use function Castor\io;
@@ -39,6 +41,7 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
     if (is_import_scaffold_deployed($app)) {
         upgrade_import_storefront($app);
         upgrade_import_brand($app);
+        remove_import_header_overrides($app);
         sync_import_owned_files($app);
         scaffold_import_extensions($app);
 
@@ -181,9 +184,7 @@ function upgrade_import_brand(App $app): void
 
     Brand::install($app);
 
-    foreach ([$contributor, 'config/sylius/twig_hooks/shop/header.yaml'] as $file) {
-        fs()->copy($templateDir . '/' . $file, $app->directory() . '/' . $file, true);
-    }
+    fs()->copy($templateDir . '/' . $contributor, $app->directory() . '/' . $contributor, true);
 
     // Only remove the legacy templates import generated, not a theme's.
     foreach ([
@@ -205,6 +206,48 @@ function upgrade_import_brand(App $app): void
     }
 
     import_log('Import storefront upgraded to the shared brand slot.');
+}
+
+/**
+ * Projects scaffolded before the import left the header layout to Sylius and the
+ * themes got config/sylius/twig_hooks/shop/header.yaml, which disabled the navbar
+ * menu and the mobile category toggle (taxon_hamburger) of every theme: YAML hook
+ * configs load after the themes' PHP ones. Remove it if it is one import generated.
+ */
+function remove_import_header_overrides(App $app): void
+{
+    $path = $app->directory() . '/config/sylius/twig_hooks/shop/header.yaml';
+
+    if (!is_file($path)) {
+        return;
+    }
+
+    try {
+        $config = Yaml::parseFile($path);
+    } catch (ParseException) {
+        return;
+    }
+
+    $hooks = [
+        'sylius_shop.base.header.navbar' => ['menu' => ['enabled' => false]],
+        'sylius_shop.base.header.content' => ['taxon_hamburger' => ['enabled' => false]],
+    ];
+    $legacyLogoHook = [
+        'sylius_shop.base.header.content.logo' => ['content' => ['template' => 'shop/shared/layout/header/logo.html.twig']],
+    ];
+
+    if (!\in_array($config, [
+        ['sylius_twig_hooks' => ['hooks' => $hooks]],
+        ['sylius_twig_hooks' => ['hooks' => $legacyLogoHook + $hooks]],
+    ], true)) {
+        return;
+    }
+
+    if (!unlink($path)) {
+        throw new \RuntimeException(\sprintf('Failed to remove "%s".', $path));
+    }
+
+    import_log('Removed the import header overrides, the header layout belongs to Sylius and the themes.');
 }
 
 function maybe_refresh_composer_autoload(): void
