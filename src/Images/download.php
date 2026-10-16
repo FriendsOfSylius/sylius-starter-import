@@ -103,35 +103,115 @@ function cleanup_import_source_image(string $sourcePath, string $webpPath): void
 }
 
 /**
- * @return array<string, string>|null
+ * Shop images are served as static files from the Sylius public directory, one directory per channel
+ * (`public/media/shops/{CHANNEL}/{role}.{hash}.{ext}`). The content hash in the file name busts browser
+ * caches when an image changes; `app.shop_images_by_channel` only keeps the public URLs.
  */
-function build_shop_channel_images(string $host): ?array
+const SHOP_IMAGES_PUBLIC_PATH = 'media/shops';
+
+/**
+ * Container parameter key => import storage role.
+ */
+const SHOP_IMAGE_PARAMETER_ROLES = [
+    'imageHeader' => 'image_header',
+    'imageInterstice' => 'image_interstice',
+    'imageLogo' => 'image_logo',
+];
+
+function shop_images_public_dir(): string
 {
-    $roles = [
-        'imageHeader' => 'image_header',
-        'imageInterstice' => 'image_interstice',
-        'imageLogo' => 'image_logo',
-    ];
+    return app_dir() . '/public/' . SHOP_IMAGES_PUBLIC_PATH;
+}
 
-    $logoPath = shop_image_storage_path($host, 'image_logo');
-
-    if (null === $logoPath) {
-        return null;
-    }
-
+/**
+ * Copies the images of a shop into the public directory of its channel and returns their URLs.
+ * Each image is optional: a shop without a logo still gets its header and interstice.
+ *
+ * @return array<string, string>
+ */
+function build_shop_channel_images(string $host): array
+{
+    $channelCode = import_channel_code($host);
+    $directory = shop_channel_images_public_dir($channelCode);
     $images = [];
 
-    foreach ($roles as $globalName => $role) {
+    foreach (SHOP_IMAGE_PARAMETER_ROLES as $parameterName => $role) {
         $path = shop_image_storage_path($host, $role);
 
         if (null === $path) {
             continue;
         }
 
-        $images[$globalName] = 'data:' . mime_type_from_image_path($path) . ';base64,' . base64_encode((string) file_get_contents($path));
+        $hash = hash_file('xxh128', $path);
+
+        if (false === $hash) {
+            continue;
+        }
+
+        $filename = \sprintf(
+            '%s.%s.%s',
+            substr($role, \strlen('image_')),
+            substr($hash, 0, 16),
+            strtolower(pathinfo($path, \PATHINFO_EXTENSION)),
+        );
+        $target = $directory . '/' . $filename;
+
+        if (!is_dir($directory) && !mkdir($directory, 0o775, true) && !is_dir($directory)) {
+            throw new \RuntimeException(\sprintf('Failed to create the shop images directory "%s".', $directory));
+        }
+
+        if (!is_file($target) && !copy($path, $target)) {
+            throw new \RuntimeException(\sprintf('Failed to copy the shop image "%s" to "%s".', $path, $target));
+        }
+
+        $images[$parameterName] = '/' . SHOP_IMAGES_PUBLIC_PATH . '/' . $channelCode . '/' . $filename;
     }
 
     return $images;
+}
+
+function shop_channel_images_public_dir(string $channelCode): string
+{
+    if (1 !== preg_match('/^[A-Za-z0-9_-]+$/', $channelCode)) {
+        throw new \RuntimeException(\sprintf('Invalid channel code "%s" for shop images.', $channelCode));
+    }
+
+    return shop_images_public_dir() . '/' . $channelCode;
+}
+
+/**
+ * Removes the shop image files that $byChannel no longer references: older versions of an image,
+ * removed images and the directories of deleted shops.
+ *
+ * @param array<string, array<string, string>> $byChannel
+ */
+function prune_shop_images(array $byChannel): void
+{
+    $root = shop_images_public_dir();
+
+    if (!is_dir($root)) {
+        return;
+    }
+
+    foreach (scandir($root) ?: [] as $channelCode) {
+        $directory = $root . '/' . $channelCode;
+
+        if ('.' === $channelCode || '..' === $channelCode || !is_dir($directory)) {
+            continue;
+        }
+
+        $keep = array_map(basename(...), array_values($byChannel[$channelCode] ?? []));
+
+        foreach (scandir($directory) ?: [] as $filename) {
+            if (is_file($directory . '/' . $filename) && !\in_array($filename, $keep, true)) {
+                unlink($directory . '/' . $filename);
+            }
+        }
+
+        if ([] === array_diff(scandir($directory) ?: [], ['.', '..'])) {
+            rmdir($directory);
+        }
+    }
 }
 
 /**
@@ -144,12 +224,14 @@ function build_all_shop_images_config(): ?array
     foreach (discover_import_hosts() as $slug) {
         $channelImages = build_shop_channel_images($slug);
 
-        if (null === $channelImages) {
+        if ([] === $channelImages) {
             continue;
         }
 
         $byChannel[import_channel_code($slug)] = $channelImages;
     }
+
+    prune_shop_images($byChannel);
 
     if ([] === $byChannel) {
         return null;

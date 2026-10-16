@@ -58,22 +58,62 @@ final class ShopImagesConfigTest extends TestCase
 
         static::assertArrayHasKey('COCORICO', $byChannel);
         static::assertArrayHasKey('DOUDOU', $byChannel);
-        static::assertStringContainsString(base64_encode('hero-a'), $byChannel['COCORICO']['imageHeader']);
-        static::assertStringContainsString(base64_encode('inter-a'), $byChannel['COCORICO']['imageInterstice']);
-        static::assertStringContainsString(base64_encode('logo-a'), $byChannel['COCORICO']['imageLogo']);
-        static::assertStringContainsString(base64_encode('hero-b'), $byChannel['DOUDOU']['imageHeader']);
+        $this->assertPublishedImage('hero-a', '/media/shops/COCORICO/header.', '.webp', $byChannel['COCORICO']['imageHeader']);
+        $this->assertPublishedImage('inter-a', '/media/shops/COCORICO/interstice.', '.webp', $byChannel['COCORICO']['imageInterstice']);
+        $this->assertPublishedImage('logo-a', '/media/shops/COCORICO/logo.', '.png', $byChannel['COCORICO']['imageLogo']);
+        $this->assertPublishedImage('hero-b', '/media/shops/DOUDOU/header.', '.webp', $byChannel['DOUDOU']['imageHeader']);
         static::assertArrayNotHasKey('imageInterstice', $byChannel['DOUDOU']);
-        static::assertStringContainsString(base64_encode('logo-b'), $byChannel['DOUDOU']['imageLogo']);
+        $this->assertPublishedImage('logo-b', '/media/shops/DOUDOU/logo.', '.png', $byChannel['DOUDOU']['imageLogo']);
     }
 
-    public function testBuildShopChannelImagesRequiresLogo(): void
+    public function testBuildShopChannelImagesKeepsImagesOfShopWithoutLogo(): void
     {
-        $media = $this->root . '/.castor/import/var/cocorico/media';
-        static::assertTrue(mkdir($media, 0o775, true));
-        static::assertNotFalse(file_put_contents($this->root . '/.castor/import/var/cocorico/products.yaml', 'products: []'));
-        static::assertNotFalse(file_put_contents($media . '/image_header.webp', 'hero-only'));
+        $this->createShopMedia('cocorico', [
+            'image_header.webp' => 'hero-only',
+        ]);
 
-        static::assertNull(build_shop_channel_images('cocorico'));
+        $images = build_shop_channel_images('cocorico');
+
+        static::assertSame(['imageHeader'], array_keys($images));
+        $this->assertPublishedImage('hero-only', '/media/shops/COCORICO/header.', '.webp', $images['imageHeader']);
+    }
+
+    public function testBuildShopChannelImagesReturnsNothingWithoutImages(): void
+    {
+        $this->createShopMedia('cocorico', []);
+
+        static::assertSame([], build_shop_channel_images('cocorico'));
+        static::assertNull(build_all_shop_images_config());
+        static::assertDirectoryDoesNotExist($this->root . '/public/media/shops/COCORICO');
+    }
+
+    public function testChangedImageGetsANewUrlAndTheOldFileIsRemoved(): void
+    {
+        $this->createShopMedia('cocorico', ['image_logo.png' => 'logo-v1']);
+        $before = build_all_shop_images_config()['parameters']['app.shop_images_by_channel']['COCORICO']['imageLogo'] ?? null;
+
+        static::assertIsString($before);
+        static::assertNotFalse(file_put_contents($this->root . '/.castor/import/var/cocorico/media/image_logo.png', 'logo-v2'));
+
+        $after = build_all_shop_images_config()['parameters']['app.shop_images_by_channel']['COCORICO']['imageLogo'] ?? null;
+
+        static::assertIsString($after);
+        static::assertNotSame($before, $after);
+        $this->assertPublishedImage('logo-v2', '/media/shops/COCORICO/logo.', '.png', $after);
+        static::assertFileDoesNotExist($this->root . '/public' . $before);
+    }
+
+    public function testBuildAllShopImagesConfigRemovesImagesOfDeletedShops(): void
+    {
+        $orphan = $this->root . '/public/media/shops/GONE';
+        static::assertTrue(mkdir($orphan, 0o775, true));
+        static::assertNotFalse(file_put_contents($orphan . '/logo.0123456789abcdef.png', 'old'));
+        $this->createShopMedia('cocorico', ['image_logo.png' => 'logo-a']);
+
+        build_all_shop_images_config();
+
+        static::assertDirectoryDoesNotExist($orphan);
+        static::assertDirectoryExists($this->root . '/public/media/shops/COCORICO');
     }
 
     public function testRegenerateShopImagesConfigWritesMultiChannelFile(): void
@@ -94,9 +134,19 @@ final class ShopImagesConfigTest extends TestCase
         static::assertStringContainsString("'app.shop_images_by_channel'", $contents);
         static::assertStringContainsString("'COCORICO'", $contents);
         static::assertStringContainsString("'DOUDOU'", $contents);
-        static::assertStringContainsString(base64_encode('hero-a'), $contents);
-        static::assertStringContainsString(base64_encode('hero-b'), $contents);
+        static::assertStringContainsString("'/media/shops/COCORICO/header.", $contents);
+        static::assertStringContainsString("'/media/shops/DOUDOU/header.", $contents);
+        static::assertStringNotContainsString('base64', $contents);
         static::assertStringNotContainsString("'twig'", $contents);
+    }
+
+    private function assertPublishedImage(string $contents, string $prefix, string $suffix, string $url): void
+    {
+        static::assertStringStartsWith($prefix, $url);
+        static::assertStringEndsWith($suffix, $url);
+        static::assertMatchesRegularExpression('/\.[0-9a-f]{16}\./', $url);
+        static::assertFileExists($this->root . '/public' . $url);
+        static::assertSame($contents, file_get_contents($this->root . '/public' . $url));
     }
 
     /**

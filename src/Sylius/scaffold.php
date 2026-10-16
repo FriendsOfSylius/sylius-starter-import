@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sylius\Starter\Import;
 
 use Sylius\Starter\Core\App;
+use Sylius\Starter\Core\Storefront\Brand;
 use Sylius\Starter\Core\Storefront\Hero;
 use Sylius\Starter\Core\Util\Database;
 use Sylius\Starter\Import\Extension\ImportExtensions;
@@ -37,6 +38,7 @@ function ensure_import_scaffold(?App $app = null, ?string $serviceName = null): 
 
     if (is_import_scaffold_deployed($app)) {
         upgrade_import_storefront($app);
+        upgrade_import_brand($app);
         sync_import_owned_files($app);
         scaffold_import_extensions($app);
 
@@ -80,6 +82,7 @@ function deploy_import_scaffold(): void
     fs()->mirror($templateDir, $targetDir, options: ['override' => false]);
 
     Hero::install(ImportContext::current()->app());
+    Brand::install(ImportContext::current()->app());
 
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/app.php');
     add_yaml_import('config/packages/_sylius.yaml', '../sylius/fixtures/import.php');
@@ -159,6 +162,49 @@ function upgrade_import_storefront(App $app): void
     }
 
     import_log('Import storefront upgraded to the shared hero slot.');
+}
+
+/**
+ * Projects scaffolded before the shared brand slot rendered the shop logo from
+ * templates/shop/shared/layout/header/logo.html.twig, a path themes also write
+ * to (and delete when they are removed). Move them to the core brand slot once.
+ */
+function upgrade_import_brand(App $app): void
+{
+    $contributor = 'src/Import/Storefront/ImportBrandContributor.php';
+
+    if (is_file($app->directory() . '/' . $contributor) || !is_file($app->directory() . '/config/packages/_sylius.yaml')) {
+        return;
+    }
+
+    $templateDir = ImportContext::packageResourcesDir() . '/templates/application';
+
+    Brand::install($app);
+
+    foreach ([$contributor, 'config/sylius/twig_hooks/shop/header.yaml'] as $file) {
+        fs()->copy($templateDir . '/' . $file, $app->directory() . '/' . $file, true);
+    }
+
+    // Only remove the legacy templates import generated, not a theme's.
+    foreach ([
+        'templates/shop/shared/layout/header/logo.html.twig',
+        'templates/shop/shared/layout/footer/copy.html.twig',
+    ] as $legacyTemplate) {
+        $path = $app->directory() . '/' . $legacyTemplate;
+
+        if (is_file($path) && str_contains((string) file_get_contents($path), "shop_image('imageLogo')")) {
+            fs()->remove($path);
+        }
+    }
+
+    // The "logo" placeholder import used to render in the checkout and error pages.
+    $legacyLogo = $app->directory() . '/templates/bundles/SyliusShopBundle/shared/logo.html.twig';
+
+    if (is_file($legacyLogo) && '<span class="fw-bold text-uppercase">logo</span>' === trim((string) file_get_contents($legacyLogo))) {
+        fs()->remove($legacyLogo);
+    }
+
+    import_log('Import storefront upgraded to the shared brand slot.');
 }
 
 function maybe_refresh_composer_autoload(): void

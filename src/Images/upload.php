@@ -84,16 +84,6 @@ function shop_images_presence(string $host): array
     ];
 }
 
-function mime_type_from_image_path(string $path): string
-{
-    return match (strtolower(pathinfo($path, \PATHINFO_EXTENSION))) {
-        'png' => 'image/png',
-        'gif' => 'image/gif',
-        'webp' => 'image/webp',
-        default => 'image/jpeg',
-    };
-}
-
 function normalize_upload_mime_type(string $mimeType, string $binary): ?string
 {
     $mimeType = strtolower(trim(explode(';', $mimeType)[0]));
