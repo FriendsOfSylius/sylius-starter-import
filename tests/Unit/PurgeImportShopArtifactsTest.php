@@ -45,6 +45,8 @@ final class PurgeImportShopArtifactsTest extends TestCase
         static::assertTrue(mkdir($media, 0o775, true));
         static::assertNotFalse(file_put_contents($hostDir . '/products.yaml', 'products: []'));
         static::assertNotFalse(file_put_contents($media . '/image_logo.png', 'logo'));
+        static::assertTrue(mkdir($this->root . '/public/media/shops/COCORICO', 0o775, true));
+        static::assertNotFalse(file_put_contents($this->root . '/public/media/shops/COCORICO/logo.0123456789abcdef.png', 'logo'));
         static::assertTrue(mkdir($fixturesDir, 0o775, true));
         static::assertNotFalse(file_put_contents($fixturesDir . '/products.php', '<?php return [];'));
         static::assertTrue(mkdir(\dirname($shopImages), 0o775, true));
@@ -70,6 +72,7 @@ final class PurgeImportShopArtifactsTest extends TestCase
         $shopImagesContents = (string) file_get_contents($shopImages);
         static::assertStringContainsString("'app.shop_images_by_channel'", $shopImagesContents);
         static::assertStringNotContainsString("'COCORICO'", $shopImagesContents);
+        static::assertDirectoryDoesNotExist($this->root . '/public/media/shops/COCORICO');
     }
 
     public function testPurgeLeavesSharedFilesWhenAnotherShopWasLastGenerated(): void
@@ -139,8 +142,9 @@ final class PurgeImportShopArtifactsTest extends TestCase
 
         static::assertStringContainsString("'COCORICO'", $contents);
         static::assertStringNotContainsString("'DOUDOU'", $contents);
-        static::assertStringContainsString(base64_encode('hero-a'), $contents);
-        static::assertStringNotContainsString(base64_encode('hero-b'), $contents);
+        static::assertStringContainsString("'/media/shops/COCORICO/header.", $contents);
+        static::assertDirectoryExists($this->root . '/public/media/shops/COCORICO');
+        static::assertDirectoryDoesNotExist($this->root . '/public/media/shops/DOUDOU');
     }
 
     private function removeDirectory(string $directory): void
