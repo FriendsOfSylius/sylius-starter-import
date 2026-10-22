@@ -16,6 +16,7 @@ function load_import_fixture_suite(string $projectSlug): void
     }
 
     write_import_suite_loader($projectSlug);
+    sync_import_media_to_app($projectSlug);
     ensure_app_ready();
 
     $target = import_shop_target($projectSlug);

@@ -80,6 +80,7 @@ function import_shop_artifact_directories(string $projectSlug): array
     return [
         'hostDir' => castor_host_dir($projectSlug),
         'fixturesDir' => app_dir() . '/config/sylius/fixtures/' . import_fixture_slug_dir($projectSlug),
+        'appMediaDir' => \dirname(import_app_media_dir($projectSlug)),
     ];
 }
 
@@ -160,13 +161,13 @@ function assert_safe_import_delete_path(string $realDirectory): void
         $allowedRoots[] = $varDir;
     }
 
-    $fixturesRoot = app_dir() . '/config/sylius/fixtures/import';
+    foreach ([app_dir() . '/config/sylius/fixtures/import', app_dir() . '/' . IMPORT_APP_MEDIA_DIR] as $appRoot) {
+        if (is_dir($appRoot)) {
+            $resolved = realpath($appRoot);
 
-    if (is_dir($fixturesRoot)) {
-        $resolved = realpath($fixturesRoot);
-
-        if (false !== $resolved) {
-            $allowedRoots[] = $resolved;
+            if (false !== $resolved) {
+                $allowedRoots[] = $resolved;
+            }
         }
     }
 

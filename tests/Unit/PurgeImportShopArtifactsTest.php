@@ -45,6 +45,8 @@ final class PurgeImportShopArtifactsTest extends TestCase
         static::assertTrue(mkdir($media, 0o775, true));
         static::assertNotFalse(file_put_contents($hostDir . '/products.yaml', 'products: []'));
         static::assertNotFalse(file_put_contents($media . '/image_logo.png', 'logo'));
+        static::assertTrue(mkdir($this->root . '/var/import/cocorico/media', 0o775, true));
+        static::assertNotFalse(file_put_contents($this->root . '/var/import/cocorico/media/coco_shirt.webp', 'webp'));
         static::assertTrue(mkdir($this->root . '/public/media/shops/COCORICO', 0o775, true));
         static::assertNotFalse(file_put_contents($this->root . '/public/media/shops/COCORICO/logo.0123456789abcdef.png', 'logo'));
         static::assertTrue(mkdir($fixturesDir, 0o775, true));
@@ -66,6 +68,7 @@ final class PurgeImportShopArtifactsTest extends TestCase
 
         static::assertDirectoryDoesNotExist($hostDir);
         static::assertDirectoryDoesNotExist($fixturesDir);
+        static::assertDirectoryDoesNotExist($this->root . '/var/import/cocorico');
         static::assertFileDoesNotExist($this->root . '/.castor/import/var/.last-generated');
         static::assertFileExists($this->root . '/config/sylius/fixtures/import.php');
         static::assertStringContainsString("'imports' => []", (string) file_get_contents($this->root . '/config/sylius/fixtures/import.php'));

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace SyliusStarter\Import;
 
 use SyliusStarter\Core\Util\Runner;
-use Symfony\Component\Filesystem\Path;
+
+use function Castor\fs;
 
 function last_generated_import_path(): string
 {
@@ -183,30 +184,36 @@ function load_collections_yaml(string $host): array
 
 /**
  * Image path written into generated fixtures. It is resolved by Symfony when the
- * fixture suite is compiled, relative to the Sylius kernel, so it is valid wherever
- * the fixtures are loaded (Docker builder, castor-api container or bare host).
+ * fixture suite is compiled, relative to the Sylius kernel, and points at the copy
+ * of the project media inside the application (see sync_import_media_to_app()): the
+ * containers loading the fixtures (Docker builder, castor-api) only mount the
+ * application directory, not the Castor project root holding ".castor/import/var".
  */
 function import_media_fixture_path(string $host, string $filename): string
 {
-    return '%kernel.project_dir%/' . import_var_dir_from_app() . '/' . $host . '/media/' . $filename;
+    return '%kernel.project_dir%/' . IMPORT_APP_MEDIA_DIR . '/' . $host . '/media/' . $filename;
+}
+
+function import_app_media_dir(string $host): string
+{
+    return app_dir() . '/' . IMPORT_APP_MEDIA_DIR . '/' . $host . '/media';
 }
 
 /**
- * The import var directory relative to the Sylius application directory
- * (".castor/import/var" sits at the Castor project root, "app/" next to it).
+ * Mirrors the project media into the application, where the generated fixtures read them.
  */
-function import_var_dir_from_app(?string $appDirectory = null, ?string $projectRoot = null): string
+function sync_import_media_to_app(string $host): void
 {
-    $appDirectory ??= ImportContext::current()->appDir();
+    $source = castor_host_dir($host) . '/media';
+    $target = import_app_media_dir($host);
 
-    if (Path::isAbsolute($appDirectory)) {
-        $projectRoot ??= ImportContext::current()->projectRoot();
+    if (!is_dir($source)) {
+        fs()->remove($target);
 
-        return Path::makeRelative(Path::join($projectRoot, IMPORT_VAR_HOST_DIR), $appDirectory);
+        return;
     }
 
-    // Both relative to the Castor project root.
-    return Path::makeRelative(IMPORT_VAR_HOST_DIR, $appDirectory);
+    fs()->mirror($source, $target, options: ['delete' => true]);
 }
 
 /**

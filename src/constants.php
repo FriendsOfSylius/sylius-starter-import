@@ -31,3 +31,6 @@ const IMPORT_DEFAULT_CHANNEL_CODE = 'WEB_STORE';
 
 /** Host path of import payloads, relative to the Castor project root. */
 const IMPORT_VAR_HOST_DIR = ImportPaths::VAR_HOST_DIR;
+
+/** Copy of the project media read by the generated fixtures, relative to the Sylius application directory. */
+const IMPORT_APP_MEDIA_DIR = ImportPaths::APP_MEDIA_DIR;
