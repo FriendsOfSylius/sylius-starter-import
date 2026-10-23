@@ -443,6 +443,11 @@ function store_import_dataset_image(string $slug, string $code, string $image, s
 {
     $filename = $code . '.webp';
 
+    // A stored image that went missing is generated again from its prompt.
+    if ('' !== $prompt && is_local_import_image($image) && null === resolve_local_import_image_path($image, $slug)) {
+        $image = '';
+    }
+
     if ('' !== $image) {
         $stored = download_import_image($image, $slug, $code, quiet: true);
     } elseif ('' !== $prompt) {
