@@ -17,8 +17,15 @@ function normalize_image_url(string $url): string
     return $url;
 }
 
+/**
+ * An image is a URL, or a path relative to the project directory (e.g. "media/bottle.webp" in a dataset).
+ */
 function download_import_image(string $url, string $host, string $code, bool $quiet = false): ?string
 {
+    if (is_local_import_image($url)) {
+        return copy_local_import_image($url, $host, $code, $quiet);
+    }
+
     $url = normalize_image_url($url);
 
     if ('' === $url || !filter_var($url, \FILTER_VALIDATE_URL)) {
@@ -93,6 +100,55 @@ function download_import_image(string $url, string $host, string $code, bool $qu
     cleanup_import_source_image($sourcePath, $webpPath);
 
     return import_media_fixture_path($host, $webpFilename);
+}
+
+function is_local_import_image(string $image): bool
+{
+    $image = trim($image);
+
+    return '' !== $image && !str_starts_with($image, '//') && !preg_match('#^[a-z][a-z0-9+.-]*:#i', $image);
+}
+
+/**
+ * The relative path must stay inside the project directory: "..", absolute paths and missing files are skipped.
+ */
+function resolve_local_import_image_path(string $relativePath, string $host): ?string
+{
+    $relativePath = str_replace('\\', '/', trim($relativePath));
+
+    if (str_starts_with($relativePath, '/') || \in_array('..', explode('/', $relativePath), true)) {
+        return null;
+    }
+
+    $path = castor_host_dir($host) . '/' . preg_replace('#^(\./)+#', '', $relativePath);
+
+    return is_file($path) && filesize($path) > 0 ? $path : null;
+}
+
+function copy_local_import_image(string $relativePath, string $host, string $code, bool $quiet = false): ?string
+{
+    $webpFilename = $code . '.webp';
+    $webpPath = castor_import_media_dir($host) . '/' . $webpFilename;
+
+    if (file_exists($webpPath) && filesize($webpPath) > 0) {
+        return import_media_fixture_path($host, $webpFilename);
+    }
+
+    $sourcePath = resolve_local_import_image_path($relativePath, $host);
+
+    if (null === $sourcePath) {
+        if (!$quiet) {
+            io()->warning(\sprintf('Image "%s" of "%s" not found in the project directory.', $relativePath, $code));
+        }
+
+        return null;
+    }
+
+    $copied = 'webp' === strtolower(pathinfo($sourcePath, \PATHINFO_EXTENSION))
+        ? copy($sourcePath, $webpPath)
+        : convert_image_to_webp($sourcePath, $webpPath, $quiet);
+
+    return $copied ? import_media_fixture_path($host, $webpFilename) : null;
 }
 
 function cleanup_import_source_image(string $sourcePath, string $webpPath): void

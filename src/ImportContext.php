@@ -17,10 +17,20 @@ final class ImportContext
 
     private ?string $resolvedProjectRoot = null;
 
+    /**
+     * @param string|null $varDir Directory holding the projects, ".castor/import/var" by default. Datasets are built
+     *                            with the same functions as shops, from a context whose var dir is the datasets one.
+     */
     public function __construct(
         private readonly App $app,
         private readonly string $serviceName,
+        private readonly ?string $varDir = null,
     ) {}
+
+    public function withVarDir(string $varDir): self
+    {
+        return new self($this->app, $this->serviceName, $varDir);
+    }
 
     public static function setCurrent(self $context): void
     {
@@ -107,7 +117,15 @@ final class ImportContext
 
     public function varDir(): string
     {
-        return $this->castorDir() . '/import/var';
+        return $this->varDir ?? $this->castorDir() . '/import/var';
+    }
+
+    /**
+     * Datasets built from the import tasks (sylius:import:dataset:build), next to the shops of the var dir.
+     */
+    public function datasetsDir(): string
+    {
+        return $this->castorDir() . '/import/datasets';
     }
 
     public static function packageResourcesDir(): string

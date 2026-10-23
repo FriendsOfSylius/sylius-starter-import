@@ -19,6 +19,12 @@ final class ImportTasksTest extends TestCase
             ['build', 'sylius:import:ai'],
             ['generate', 'sylius:import:fixtures'],
             ['load', 'sylius:import:fixtures'],
+            ['list', 'sylius:import:dataset'],
+            ['build', 'sylius:import:dataset'],
+            ['images', 'sylius:import:dataset'],
+            ['export', 'sylius:import:dataset'],
+            ['delete', 'sylius:import:dataset'],
+            ['create', 'sylius:import:shop'],
         ];
 
         $index = 0;

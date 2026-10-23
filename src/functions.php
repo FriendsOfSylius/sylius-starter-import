@@ -9,11 +9,19 @@ use SyliusStarter\Core\Service\SyliusService;
 use SyliusStarter\Core\Task\TaskProviderRegistry;
 use SyliusStarter\Core\Util\Docker;
 use SyliusStarter\Core\Util\Fixtures;
+use SyliusStarter\Import\Dataset\DatasetBuilders;
 use SyliusStarter\Import\Tasks\ImportTasks;
 
 TaskProviderRegistry::register(
     'import',
     static fn(SyliusService $service): iterable => (new ImportTasks($service->getName(), $service->getDirectory(), $service->getDomains()[0] ?? null))(),
+);
+
+DatasetBuilders::register(
+    'ai',
+    static function (string $slug, string $name, string $description, ?string $url, int $limit): void {
+        build_ai_import_data($name, $description, $url, min($limit, IMPORT_AI_PRODUCT_LIMIT), $slug);
+    },
 );
 
 Fixtures::beforeLoad(static function (App $app, array $suites): void {

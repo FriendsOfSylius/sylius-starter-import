@@ -489,6 +489,7 @@ function select_import_host_slug(string $prompt): ?string
  *     url: string|null,
  *     description: string|null,
  *     importedAt: string|null,
+ *     dataset: string|null,
  *     shopImages: array{logo: bool, header: bool, interstice: bool}|null,
  * }>
  */
@@ -526,6 +527,7 @@ function list_import_shops(): array
             'url' => isset($config['url']) ? (string) $config['url'] : null,
             'description' => isset($config['description']) ? (string) $config['description'] : null,
             'importedAt' => import_project_imported_at($slug),
+            'dataset' => isset($config['dataset']) ? (string) $config['dataset'] : null,
             'shopImages' => [
                 'logo' => (bool) ($shopImages['logo'] ?? false),
                 'header' => (bool) ($shopImages['header'] ?? false),
@@ -578,6 +580,7 @@ function import_project_imported_at(string $slug): ?string
  *     url: string|null,
  *     description: string|null,
  *     importedAt: string|null,
+ *     dataset: string|null,
  *     shopImages: array{logo: bool, header: bool, interstice: bool}|null,
  * }> $shops
  */
@@ -619,6 +622,7 @@ function write_import_shop_list(array $shops, ?bool $tty = null): void
  *     url: string|null,
  *     description: string|null,
  *     importedAt: string|null,
+ *     dataset: string|null,
  *     shopImages: array{logo: bool, header: bool, interstice: bool}|null,
  * }> $shops
  *

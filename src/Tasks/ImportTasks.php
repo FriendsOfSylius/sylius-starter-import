@@ -43,6 +43,7 @@ final class ImportTasks
         yield from $this->aiBuildTask();
         yield from $this->fixturesGenerateTask();
         yield from $this->fixturesLoadTask();
+        yield from (new DatasetTasks($this->name, $this->directory, $this->domain))();
     }
 
     private function withContext(callable $callback): void
