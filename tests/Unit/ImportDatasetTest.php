@@ -162,6 +162,7 @@ final class ImportDatasetTest extends TestCase
         static::assertFileDoesNotExist($dir . '/media/unused.webp');
         static::assertFileDoesNotExist($dir . '/media/stale.webp');
         static::assertSame(ImportContext::current()->castorDir() . '/import/var', ImportContext::current()->varDir());
+        static::assertSame([], glob($this->root . '/.castor/import/var/.progress/*') ?: [], 'The progress files are removed.');
 
         $this->expectExceptionMessage('"wine" is a built-in dataset');
         build_import_dataset('test', 'wine', 'Wine', 'Wine', null, 20);

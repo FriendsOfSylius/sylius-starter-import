@@ -306,6 +306,8 @@ function build_shop_user_fixture(string $projectSlug): array
 function build_taxon_image_fixture(array $taxonIndex, string $projectSlug, ?string $styleReferencePrompt = null): array
 {
     $custom = [];
+    $progressKey = import_shop_progress_key($projectSlug);
+    import_progress_start($progressKey, 'Collection images', \count($taxonIndex));
 
     if (stream_isatty(\STDOUT)) {
         io()->progressStart(\count($taxonIndex));
@@ -314,6 +316,7 @@ function build_taxon_image_fixture(array $taxonIndex, string $projectSlug, ?stri
     foreach ($taxonIndex as $taxon) {
         $code = 'taxon_' . $taxon['code'];
         $imagePath = null;
+        import_progress_current($progressKey, $taxon['name']);
 
         if (null !== $taxon['image'] && '' !== $taxon['image']) {
             $imagePath = download_import_image($taxon['image'], $projectSlug, $code, quiet: true);
@@ -334,10 +337,14 @@ function build_taxon_image_fixture(array $taxonIndex, string $projectSlug, ?stri
             ];
         }
 
+        import_progress_advance($progressKey);
+
         if (stream_isatty(\STDOUT)) {
             io()->progressAdvance();
         }
     }
+
+    import_progress_finish($progressKey);
 
     if (stream_isatty(\STDOUT)) {
         io()->progressFinish();
@@ -390,6 +397,8 @@ function build_product_fixtures(
     $promoCount = 0;
     $imageCount = 0;
     $imageFailures = 0;
+    $progressKey = import_shop_progress_key($projectSlug);
+    import_progress_start($progressKey, 'Product images', \count($products));
 
     if (stream_isatty(\STDOUT)) {
         io()->progressStart(\count($products));
@@ -398,8 +407,11 @@ function build_product_fixtures(
     foreach ($products as $product) {
         $title = trim((string) ($product['title'] ?? ''));
         $productId = (int) ($product['id'] ?? -1);
+        import_progress_current($progressKey, $title);
 
         if ('' === $title) {
+            import_progress_advance($progressKey);
+
             if (stream_isatty(\STDOUT)) {
                 io()->progressAdvance();
             }
@@ -461,10 +473,14 @@ function build_product_fixtures(
         }
 
         $priceCustom[] = $priceEntry;
+        import_progress_advance($progressKey);
+
         if (stream_isatty(\STDOUT)) {
             io()->progressAdvance();
         }
     }
+
+    import_progress_finish($progressKey);
 
     if (stream_isatty(\STDOUT)) {
         io()->progressFinish();

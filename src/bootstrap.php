@@ -22,3 +22,4 @@ require_once __DIR__ . '/helpers_ai.php';
 require_once __DIR__ . '/Fixtures/builders.php';
 require_once __DIR__ . '/Fixtures/generate.php';
 require_once __DIR__ . '/datasets.php';
+require_once __DIR__ . '/progress.php';

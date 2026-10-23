@@ -260,7 +260,14 @@ function build_import_dataset(string $source, string $slug, string $name, string
             fs()->rename($productsPath, $backupPath, true);
         }
 
-        $builder($slug, $name, $description, $url, $limit);
+        // A single AI or fetch call: the step has no intermediate progress.
+        import_progress_start(import_dataset_progress_key($slug), 'ai' === $source ? 'Writing the catalog with AI' : 'Fetching the catalog', 1);
+
+        try {
+            $builder($slug, $name, $description, $url, $limit);
+        } finally {
+            import_progress_finish(import_dataset_progress_key($slug));
+        }
 
         // The shop builders report their errors and return: keep the previous catalog.
         if (!is_file($productsPath)) {
@@ -345,17 +352,24 @@ function store_import_dataset_images(string $slug): array
 
         io()->section(\sprintf('Storing the images of dataset %s', $slug));
 
+        $progressKey = import_dataset_progress_key($slug);
+        $isNamed = static fn(mixed $item, string $key): bool => \is_array($item) && '' !== trim((string) ($item[$key] ?? ''));
+        import_progress_start($progressKey, 'Product images', \count(array_filter($products, static fn(mixed $product): bool => $isNamed($product, 'title'))));
+
         foreach ($products as $index => $product) {
-            if (!\is_array($product) || '' === trim((string) ($product['title'] ?? ''))) {
+            if (!$isNamed($product, 'title')) {
                 continue;
             }
 
+            import_progress_current($progressKey, trim((string) $product['title']));
             $image = store_import_dataset_image(
                 $slug,
                 resolve_product_code($product, $usedCodes),
                 trim((string) ($product['image'] ?? '')),
                 trim((string) ($product['image_prompt'] ?? '')),
             );
+
+            import_progress_advance($progressKey);
 
             if (null === $image) {
                 $failures += '' !== trim((string) ($product['image'] ?? '')) || '' !== trim((string) ($product['image_prompt'] ?? '')) ? 1 : 0;
@@ -368,6 +382,8 @@ function store_import_dataset_images(string $slug): array
             ++$images;
         }
 
+        import_progress_start($progressKey, 'Collection images', \count(array_filter($collections, static fn(mixed $collection): bool => $isNamed($collection, 'name'))));
+
         /** @var array<string, true> $usedTaxonCodes */
         $usedTaxonCodes = [];
 
@@ -378,6 +394,7 @@ function store_import_dataset_images(string $slug): array
                 continue;
             }
 
+            import_progress_current($progressKey, $name);
             $image = store_import_dataset_image(
                 $slug,
                 'collection_' . unique_taxon_code($name, $usedTaxonCodes),
@@ -385,11 +402,15 @@ function store_import_dataset_images(string $slug): array
                 null !== $styleReferencePrompt ? \sprintf('Category thumbnail for "%s", same visual style as: %s', $name, $styleReferencePrompt) : '',
             );
 
+            import_progress_advance($progressKey);
+
             if (null !== $image) {
                 $collections[$index]['image'] = $image;
                 $used[$image] = true;
             }
         }
+
+        import_progress_finish($progressKey);
 
         $productsData['products'] = $products;
         fs()->dumpFile(castor_var_path($slug), Yaml::dump($productsData, 4, 4, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK));
